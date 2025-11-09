@@ -1,13 +1,8 @@
-require "nvchad.mappings"
+require("nvchad.mappings")
 
 local map = vim.keymap.set
 local prompt_position = require("telescope.config").values.layout_config.horizontal.prompt_position
 local fzf_opts = { ["--layout"] = prompt_position == "top" and "reverse" or "default" }
-
-map("n", ";", ":", { desc = "CMD enter command mode" })
-map("i", "jk", "<ESC>")
-
--- map({ "n", "i", "v" }, "<C-s>", "<cmd> w <cr>")
 
 map("n", "<A-i>", function()
   require("nvchad.tabufline").next()
@@ -64,15 +59,15 @@ map("o", "m", function()
 end, { noremap = true, silent = true })
 
 map({ "n", "i", "t" }, "<C-\\>", function()
-  require("nvchad.term").toggle { pos = "sp", id = "HorizontalTerm" }
+  require("nvchad.term").toggle({ pos = "sp", id = "HorizontalTerm" })
 end, { noremap = true, silent = true })
 
 map({ "n", "i", "t" }, "<A-\\>", function()
-  require("nvchad.term").toggle { pos = "vsp", id = "VerticalTerm" }
+  require("nvchad.term").toggle({ pos = "vsp", id = "VerticalTerm" })
 end, { noremap = true, silent = true })
 
 map({ "n", "i", "t" }, "<A-d>", function()
-  require("nvchad.term").toggle { pos = "float", id = "FloatTerm" }
+  require("nvchad.term").toggle({ pos = "float", id = "FloatTerm" })
 end, { noremap = true, silent = true })
 
 map("n", "go", ":Trouble symbols toggle win.position=right<CR>", { noremap = true, silent = true })
@@ -83,8 +78,28 @@ map("n", "gR", ":Lspsaga rename ++project", { noremap = true, silent = true })
 map("n", "gd", ":Lspsaga peek_definition", { noremap = true, silent = true })
 map("n", "gD", ":Lspsaga goto_definition", { noremap = true, silent = true })
 map("n", "gh", function()
-  require("fzf-lua").lsp_references { fzf_opts = fzf_opts }
+  require("fzf-lua").lsp_references({ fzf_opts = fzf_opts })
 end, { noremap = true, silent = true })
 map("n", "gm", function()
-  require("fzf-lua").lsp_implementations { fzf_opts = fzf_opts }
+  require("fzf-lua").lsp_implementations({ fzf_opts = fzf_opts })
 end, { noremap = true, silent = true })
+
+map("n", "<leader>tc", function()
+  require("neotest").run.run()
+end, { noremap = true, silent = true })
+map("n", "<leader>tf", function()
+  require("neotest").run.run(vim.fn.expand("%"))
+end, { noremap = true, silent = true })
+map("n", "<leader>td", function()
+  require("neotest").run.run({ strategy = "dap" })
+end, { noremap = true, silent = true })
+map("n", "<leader>tl", function()
+  require("neotest").run.run_last()
+end, { noremap = true, silent = true })
+map("n", "<leader>to", ":Neotest output-panel", { noremap = true, silent = true })
+
+map("n", "mx", ":BookmarksMark<CR>", { noremap = true, silent = true })
+map("n", "mq", ":BookmarksQuickMark<CR>", { noremap = true, silent = true })
+map("n", "mj", ":BookmarksGotoNext<CR>", { noremap = true, silent = true })
+map("n", "mk", ":BookmarksGotoPrev<CR>", { noremap = true, silent = true })
+map("n", "mo", ":BookmarksGoto<CR>", { noremap = true, silent = true })
