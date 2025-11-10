@@ -63,11 +63,7 @@ return {
       -- })
 
       table.insert(opts.sources, { name = "trae", priority = 1000 })
-      table.insert(opts.sources, { name = "path" })
     end,
-    dependencies = {
-      { "hrsh7th/cmp-path" },
-    },
   },
 
   {
@@ -313,6 +309,68 @@ return {
     event = { "BufReadPost", "BufAdd", "BufNewFile" },
     opts = {
       delay = 200,
+    },
+  },
+
+  {
+    "romainl/vim-cool",
+    lazy = true,
+    event = { "CursorMoved", "InsertEnter" },
+  },
+
+  {
+    "tpope/vim-sleuth",
+    lazy = true,
+    event = { "BufNewFile", "BufReadPost", "BufFilePost" },
+  },
+
+  {
+    "MagicDuck/grug-far.nvim",
+    lazy = true,
+    cmd = "GrugFar",
+    opts = {
+      engine = "ripgrep",
+      engines = {
+        ripgrep = {
+          path = "rg",
+          showReplaceDiff = true,
+          placeholders = {
+            enabled = true,
+          },
+        },
+      },
+      transient = true,
+      icons = { enabled = true },
+      disableBufferLineNumbers = true,
+      windowCreationCommand = "bot split",
+      keymaps = {
+        replace = { n = ",r" },
+        qflist = { n = ",q" },
+        syncLocations = { n = ",s" },
+        syncLine = { n = ",l" },
+        close = { n = ",c" },
+        historyOpen = { n = ",t" },
+        historyAdd = { n = ",a" },
+        refresh = { n = ",f" },
+        openLocation = { n = ",o" },
+        openNextLocation = { n = "<Down>" },
+        openPrevLocation = { n = "<Up>" },
+        gotoLocation = { n = "<Enter>" },
+        pickHistoryEntry = { n = "<Enter>" },
+        abort = { n = ",b" },
+        help = { n = "g?" },
+        toggleShowCommand = { n = ",w" },
+        swapEngine = { n = ",e" },
+        previewLocation = { n = ",i" },
+        swapReplacementInterpreter = { n = ",x" },
+        applyNext = { n = ",j" },
+        applyPrev = { n = ",k" },
+        syncNext = { n = ",n" },
+        syncPrev = { n = ",p" },
+        syncFile = { n = ",v" },
+        nextInput = { n = "<Tab>" },
+        prevInput = { n = "<S-Tab>" },
+      },
     },
   },
 }

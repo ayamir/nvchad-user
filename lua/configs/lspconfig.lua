@@ -1,7 +1,31 @@
 require("nvchad.configs.lspconfig").defaults()
 
-local servers = { "lua_ls", "gopls" }
+local servers = { "lua_ls", "gopls", "jsonls" }
 vim.lsp.enable(servers)
+
+vim.lsp.config("lua_ls", {
+  settings = {
+    Lua = {
+      runtime = { version = "LuaJIT" },
+      diagnostics = {
+        globals = { "vim" },
+        disable = { "different-requires", "undefined-field" },
+      },
+      workspace = {
+        library = {
+          vim.fn.expand("$VIMRUNTIME/lua"),
+          vim.fn.expand("$VIMRUNTIME/lua/vim/lsp"),
+        },
+        maxPreload = 100000,
+        preloadFileSize = 10000,
+      },
+      hint = { enable = true, setType = true },
+      format = { enable = false },
+      telemetry = { enable = false },
+      semantic = { enable = false },
+    },
+  },
+})
 
 -- read :h vim.lsp.config for changing options of lsp servers
 vim.lsp.config("gopls", {
@@ -50,31 +74,6 @@ vim.lsp.config("gopls", {
         regenerate_cgo = true,
         upgrade_dependency = true,
       },
-    },
-  },
-})
-
-vim.lsp.config("lua_ls", {
-  settings = {
-    Lua = {
-      runtime = { version = "LuaJIT" },
-      diagnostics = {
-        globals = { "vim" },
-        disable = { "different-requires", "undefined-field" },
-      },
-      workspace = {
-        library = {
-          vim.fn.expand("$VIMRUNTIME/lua"),
-          vim.fn.expand("$VIMRUNTIME/lua/vim/lsp"),
-        },
-        maxPreload = 100000,
-        preloadFileSize = 10000,
-      },
-      hint = { enable = true, setType = true },
-      format = { enable = false },
-      telemetry = { enable = false },
-      -- Do not override treesitter lua highlighting with lua_ls's highlighting
-      semantic = { enable = false },
     },
   },
 })
