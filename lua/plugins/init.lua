@@ -87,17 +87,6 @@ return {
             fallback()
           end
         end, { "i", "s" }),
-        ["<CR>"] = cmp.mapping({
-          i = function(fallback)
-            if cmp.visible() and cmp.get_active_entry() then
-              cmp.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = false })
-            else
-              fallback()
-            end
-          end,
-          s = cmp.mapping.confirm({ select = true }),
-          c = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true }),
-        }),
       }),
       snippet = {
         expand = function(args)
@@ -481,6 +470,25 @@ return {
           end,
           level = "INFO",
         },
+      },
+    },
+  },
+
+  {
+    "nacro90/numb.nvim",
+    config = function()
+      require("numb").setup()
+    end,
+  },
+
+  {
+    "lowitea/aw-watcher.nvim",
+    lazy = true,
+    event = "VeryLazy",
+    opts = {
+      aw_server = {
+        host = "127.0.0.1",
+        port = 5600,
       },
     },
   },
