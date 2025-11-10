@@ -2,6 +2,31 @@ require("nvchad.autocmds")
 
 local autocmd = {}
 
+vim.api.nvim_create_autocmd("User", {
+  pattern = "PersistedSavePre",
+  callback = function()
+    local fts = {
+      "codecompanion",
+      "NvimTree",
+      "Trouble",
+      "qf",
+      "netrw",
+      "neotest-summary",
+      "neotest-output-panel",
+      "NvTerm_sp",
+      "NvTerm_vsp",
+    }
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      local ft = vim.bo[buf].filetype
+      for _, ft_ in pairs(fts) do
+        if ft == ft_ then
+          vim.api.nvim_buf_delete(buf, { force = true })
+        end
+      end
+    end
+  end,
+})
+
 vim.api.nvim_create_autocmd("BufWritePre", {
   pattern = "*",
   callback = function(args)
