@@ -3,6 +3,7 @@ require("nvchad.mappings")
 local map = vim.keymap.set
 local prompt_position = require("telescope.config").values.layout_config.horizontal.prompt_position
 local fzf_opts = { ["--layout"] = prompt_position == "top" and "reverse" or "default" }
+local gitsigns = require("gitsigns")
 
 map("n", "<A-i>", function()
   require("nvchad.tabufline").next()
@@ -38,8 +39,6 @@ map("n", "<C-l>", ":SmartCursorMoveRight<CR>", { noremap = true, silent = true }
 map("n", "<C-j>", ":SmartCursorMoveDown<CR>", { noremap = true, silent = true })
 map("n", "<C-k>", ":SmartCursorMoveUp<CR>", { noremap = true, silent = true })
 
-map("n", "gt", ":Trouble diagnostics toggle", { noremap = true, silent = true })
-
 map("n", "<leader>w", ":HopWordMW<CR>", { noremap = true, silent = true })
 map("n", "<leader>j", ":HopLineMW<CR>", { noremap = true, silent = true })
 
@@ -70,6 +69,8 @@ map({ "n", "i", "t" }, "<A-d>", function()
   require("nvchad.term").toggle({ pos = "float", id = "FloatTerm" })
 end, { noremap = true, silent = true })
 
+map("n", "<leader>lr", ":LspStart<CR>", { noremap = true, silent = true })
+map("n", "<leader>li", ":LspInfo<CR>", { noremap = true, silent = true })
 map("n", "go", ":Trouble symbols toggle win.position=right<CR>", { noremap = true, silent = true })
 map("n", "g[", ":Lspsaga diagnostics_jump_prev<CR>", { noremap = true, silent = true })
 map("n", "g]", ":Lspsaga diagnostics_jump_next<CR>", { noremap = true, silent = true })
@@ -77,11 +78,15 @@ map("n", "gr", ":Lspsaga rename<CR>", { noremap = true, silent = true })
 map("n", "gR", ":Lspsaga rename ++project<CR>", { noremap = true, silent = true })
 map("n", "gd", ":Lspsaga peek_definition<CR>", { noremap = true, silent = true })
 map("n", "gD", ":Lspsaga goto_definition<CR>", { noremap = true, silent = true })
+map("n", "gt", ":Trouble diagnostics toggle", { noremap = true, silent = true })
 map("n", "gh", function()
   require("fzf-lua").lsp_references({ fzf_opts = fzf_opts })
 end, { noremap = true, silent = true })
 map("n", "gm", function()
   require("fzf-lua").lsp_implementations({ fzf_opts = fzf_opts })
+end, { noremap = true, silent = true })
+map("n", "gy", function()
+  require("symbol-usage").refresh()
 end, { noremap = true, silent = true })
 
 map("n", "<leader>tc", function()
@@ -103,3 +108,53 @@ map("n", "mq", ":BookmarksQuickMark<CR>", { noremap = true, silent = true })
 map("n", "mj", ":BookmarksGotoNext<CR>", { noremap = true, silent = true })
 map("n", "mk", ":BookmarksGotoPrev<CR>", { noremap = true, silent = true })
 map("n", "mo", ":BookmarksGoto<CR>", { noremap = true, silent = true })
+
+map({ "n", "x", "o" }, "w", function()
+  require("spider").motion("w")
+end, { noremap = true, silent = true })
+map({ "n", "x", "o" }, "e", function()
+  require("spider").motion("e")
+end, { noremap = true, silent = true })
+map({ "n", "x", "o" }, "b", function()
+  require("spider").motion("b")
+end, { noremap = true, silent = true })
+
+map("n", "]g", function()
+  if vim.wo.diff then
+    return "]g"
+  end
+  vim.schedule(function()
+    gitsigns.nav_hunk("next")
+  end)
+  return "<Ignore>"
+end, { noremap = true, silent = true, expr = true })
+map("n", "[g", function()
+  if vim.wo.diff then
+    return "[g"
+  end
+  vim.schedule(function()
+    gitsigns.nav_hunk("prev")
+  end)
+  return "<Ignore>"
+end, { noremap = true, silent = true, expr = true })
+map("n", "<leader>gs", function()
+  gitsigns.stage_hunk()
+end, { noremap = true, silent = true })
+map("v", "<leader>gs", function()
+  gitsigns.stage_hunk({ vim.fn.line("."), vim.fn.line("v") })
+end, { noremap = true, silent = true })
+map("n", "<leader>gr", function()
+  gitsigns.reset_hunk()
+end, { noremap = true, silent = true })
+map("v", "<leader>gr", function()
+  gitsigns.reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
+end, { noremap = true, silent = true })
+map("n", "<leader>gR", function()
+  gitsigns.reset_buffer()
+end, { noremap = true, silent = true })
+map("n", "<leader>gp", function()
+  gitsigns.preview_hunk()
+end, { noremap = true, silent = true })
+map("n", "<leader>gb", function()
+  gitsigns.blame_line({ full = true })
+end, { noremap = true, silent = true })

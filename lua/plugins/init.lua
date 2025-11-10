@@ -39,6 +39,42 @@ return {
   },
 
   {
+    "hrsh7th/nvim-cmp",
+    opts = function(_, opts)
+      local cmp = require("cmp")
+
+      -- vim.list_extend(opts.mapping, {
+      --   ["<C-p>"] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
+      --   ["<C-n>"] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
+      --   ["<C-d>"] = cmp.mapping.scroll_docs(-4),
+      --   ["<C-f>"] = cmp.mapping.scroll_docs(4),
+      --   ["<C-w>"] = cmp.mapping.abort(),
+      --   ["<CR>"] = cmp.mapping({
+      --     i = function(fallback)
+      --       if cmp.visible() and cmp.get_active_entry() then
+      --         cmp.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = false })
+      --       else
+      --         fallback()
+      --       end
+      --     end,
+      --     s = cmp.mapping.confirm({ select = true }),
+      --     c = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true }),
+      --   }),
+      -- })
+
+      vim.list_extend(opts.sources, {
+        { name = "trae", priority = 1000 },
+        { name = "tmux" },
+        { name = "path" },
+      })
+    end,
+    dependencies = {
+      { "andersevenrud/cmp-tmux" },
+      { "hrsh7th/cmp-path" },
+    },
+  },
+
+  {
     "nvim-treesitter/nvim-treesitter",
     event = "BufReadPre",
     opts = {
@@ -54,6 +90,38 @@ return {
       "nvim-treesitter/nvim-treesitter-context",
       { "andymass/vim-matchup", init = require("configs.matchup") },
       { "hiphish/rainbow-delimiters.nvim", config = require("configs.rainbow_delims") },
+    },
+  },
+
+  {
+    "nvim-telescope/telescope.nvim",
+    opts = function(_, opts)
+      require("telescope").load_extension("persisted")
+      return opts
+    end,
+  },
+
+  {
+    "karb94/neoscroll.nvim",
+    lazy = true,
+    event = { "BufReadPost" },
+    opts = {
+      hide_cursor = true,
+      stop_eof = true,
+      use_local_scrolloff = false,
+      respect_scrolloff = false,
+      cursor_scrolls_alone = true,
+      mappings = {
+        "<C-u>",
+        "<C-d>",
+        "<C-b>",
+        "<C-f>",
+        "<C-y>",
+        "<C-e>",
+        "zt",
+        "zz",
+        "zb",
+      },
     },
   },
 
@@ -215,7 +283,6 @@ return {
     cmd = { "BookmarksGoto" },
     dependencies = {
       { "kkharji/sqlite.lua" },
-      { "nvim-telescope/telescope.nvim" }, -- currently has only telescopes supported, but PRs for other pickers are welcome
       { "stevearc/dressing.nvim" }, -- optional: better UI
     },
     config = function()
@@ -242,5 +309,14 @@ return {
       "rouge8/neotest-rust",
     },
     config = require("configs.neotest"),
+  },
+
+  {
+    "echasnovski/mini.cursorword",
+    lazy = true,
+    event = { "BufReadPost", "BufAdd", "BufNewFile" },
+    opts = {
+      delay = 200,
+    },
   },
 }
