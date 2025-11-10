@@ -1,8 +1,6 @@
 require("nvchad.mappings")
 
 local map = vim.keymap.set
-local prompt_position = require("telescope.config").values.layout_config.horizontal.prompt_position
-local fzf_opts = { ["--layout"] = prompt_position == "top" and "reverse" or "default" }
 local gitsigns = require("gitsigns")
 
 map("n", "<C-n>", function()
@@ -75,24 +73,6 @@ end, { noremap = true, silent = true })
 
 map("n", "<leader>lr", ":LspStart<CR>", { noremap = true, silent = true })
 map("n", "<leader>li", ":LspInfo<CR>", { noremap = true, silent = true })
-map("n", "ga", ":Lspsaga code_action<CR>", { noremap = true, silent = true })
-map("n", "go", ":Trouble symbols toggle win.position=right<CR>", { noremap = true, silent = true })
-map("n", "g[", ":Lspsaga diagnostics_jump_prev<CR>", { noremap = true, silent = true })
-map("n", "g]", ":Lspsaga diagnostics_jump_next<CR>", { noremap = true, silent = true })
-map("n", "gr", ":Lspsaga rename<CR>", { noremap = true, silent = true })
-map("n", "gR", ":Lspsaga rename ++project<CR>", { noremap = true, silent = true })
-map("n", "gd", ":Lspsaga peek_definition<CR>", { noremap = true, silent = true })
-map("n", "gD", ":Lspsaga goto_definition<CR>", { noremap = true, silent = true })
-map("n", "gt", ":Trouble diagnostics toggle<CR>", { noremap = true, silent = true })
-map("n", "gh", function()
-  require("fzf-lua").lsp_references({ fzf_opts = fzf_opts })
-end, { noremap = true, silent = true })
-map("n", "gm", function()
-  require("fzf-lua").lsp_implementations({ fzf_opts = fzf_opts })
-end, { noremap = true, silent = true })
-map("n", "gy", function()
-  require("symbol-usage").refresh()
-end, { noremap = true, silent = true })
 
 map("n", "<leader>tc", function()
   require("neotest").run.run()
@@ -163,3 +143,6 @@ end, { noremap = true, silent = true })
 map("n", "<leader>gb", function()
   gitsigns.blame_line({ full = true })
 end, { noremap = true, silent = true })
+
+map("n", "<leader>fr", ":Telescope resume<CR>", { noremap = true, silent = true })
+map("n", "<leader>fR", ":FzfLua resume<CR>", { noremap = true, silent = true })

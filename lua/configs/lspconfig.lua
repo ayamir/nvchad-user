@@ -1,33 +1,76 @@
 require("nvchad.configs.lspconfig").defaults()
 
-local servers = { "lua_ls", "gopls", "jsonls" }
-vim.lsp.enable(servers)
+local map = vim.keymap.set
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+local prompt_position = require("telescope.config").values.layout_config.horizontal.prompt_position
+local fzf_opts = { ["--layout"] = prompt_position == "top" and "reverse" or "default" }
 
-vim.lsp.config("lua_ls", {
-  settings = {
-    Lua = {
-      runtime = { version = "LuaJIT" },
-      diagnostics = {
-        globals = { "vim" },
-        disable = { "different-requires", "undefined-field" },
-      },
-      workspace = {
-        library = {
-          vim.fn.expand("$VIMRUNTIME/lua"),
-          vim.fn.expand("$VIMRUNTIME/lua/vim/lsp"),
-        },
-        maxPreload = 100000,
-        preloadFileSize = 10000,
-      },
-      hint = { enable = true, setType = true },
-      format = { enable = false },
-      telemetry = { enable = false },
-      semantic = { enable = false },
+capabilities.textDocument.completion.completionItem = {
+  documentationFormat = { "markdown", "plaintext" },
+  snippetSupport = true,
+  preselectSupport = true,
+  insertReplaceSupport = true,
+  labelDetailsSupport = true,
+  deprecatedSupport = true,
+  commitCharactersSupport = true,
+  tagSupport = { valueSet = { 1 } },
+  resolveSupport = {
+    properties = {
+      "documentation",
+      "detail",
+      "additionalTextEdits",
     },
   },
+}
+local on_init = function(client, _)
+  if vim.fn.has("nvim-0.11") ~= 1 then
+    if client.supports_method("textDocument/semanticTokens") then
+      client.server_capabilities.semanticTokensProvider = nil
+    end
+  else
+    if client:supports_method("textDocument/semanticTokens") then
+      client.server_capabilities.semanticTokensProvider = nil
+    end
+  end
+end
+
+local on_attach = function(_, bufnr)
+  local function opts()
+    return { noremap = true, silent = true, buffer = bufnr }
+  end
+
+  map("n", "ga", ":Lspsaga code_action<CR>", opts())
+  map("n", "go", ":Trouble symbols toggle win.position=right<CR>", opts())
+  map("n", "g[", ":Lspsaga diagnostics_jump_prev<CR>", opts())
+  map("n", "g]", ":Lspsaga diagnostics_jump_next<CR>", opts())
+  map("n", "gr", ":Lspsaga rename<CR>", opts())
+  map("n", "gR", ":Lspsaga rename ++project<CR>", opts())
+  map("n", "gd", ":Lspsaga peek_definition<CR>", opts())
+  map("n", "gD", ":Lspsaga goto_definition<CR>", opts())
+  map("n", "gt", ":Trouble diagnostics toggle<CR>", opts())
+  map("n", "gh", function()
+    require("fzf-lua").lsp_references({ fzf_opts = fzf_opts })
+  end, opts())
+  map("n", "gm", function()
+    require("fzf-lua").lsp_implementations({ fzf_opts = fzf_opts })
+  end, opts())
+  map("n", "gy", function()
+    require("symbol-usage").refresh()
+  end, opts())
+end
+
+dofile(vim.g.base46_cache .. "lsp")
+require("nvchad.lsp").diagnostic_config()
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(args)
+    on_attach(_, args.buf)
+  end,
 })
 
--- read :h vim.lsp.config for changing options of lsp servers
+vim.lsp.config("*", { capabilities = capabilities, on_init = on_init })
+
+local servers = { "gopls", "jsonls" }
+vim.lsp.enable(servers)
 vim.lsp.config("gopls", {
   cmd = { "gopls", "-remote.debug=:0", "-remote=auto" },
   filetypes = { "go", "gomod", "gosum", "gotmpl", "gohtmltmpl", "gotexttmpl" },
