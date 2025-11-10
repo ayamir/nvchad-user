@@ -62,14 +62,10 @@ return {
       --   }),
       -- })
 
-      vim.list_extend(opts.sources, {
-        { name = "trae", priority = 1000 },
-        { name = "tmux" },
-        { name = "path" },
-      })
+      table.insert(opts.sources, { name = "trae", priority = 1000 })
+      table.insert(opts.sources, { name = "path" })
     end,
     dependencies = {
-      { "andersevenrud/cmp-tmux" },
       { "hrsh7th/cmp-path" },
     },
   },
