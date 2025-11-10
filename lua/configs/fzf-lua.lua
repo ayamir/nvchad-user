@@ -1,5 +1,5 @@
 return function()
-  require("fzf-lua").setup {
+  require("fzf-lua").setup({
     { "telescope" },
-  }
+  })
 end

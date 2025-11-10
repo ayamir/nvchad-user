@@ -1,3 +1,5 @@
+local cmp = require("cmp")
+
 local find_or_create_project_bookmark_group = function()
   local project_root = require("project").get_project_root()
   if not project_root then
@@ -40,30 +42,69 @@ return {
 
   {
     "hrsh7th/nvim-cmp",
-    opts = function(_, opts)
-      local cmp = require("cmp")
-
-      -- vim.list_extend(opts.mapping, {
-      --   ["<C-p>"] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
-      --   ["<C-n>"] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
-      --   ["<C-d>"] = cmp.mapping.scroll_docs(-4),
-      --   ["<C-f>"] = cmp.mapping.scroll_docs(4),
-      --   ["<C-w>"] = cmp.mapping.abort(),
-      --   ["<CR>"] = cmp.mapping({
-      --     i = function(fallback)
-      --       if cmp.visible() and cmp.get_active_entry() then
-      --         cmp.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = false })
-      --       else
-      --         fallback()
-      --       end
-      --     end,
-      --     s = cmp.mapping.confirm({ select = true }),
-      --     c = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true }),
-      --   }),
-      -- })
-
-      table.insert(opts.sources, { name = "trae", priority = 1000 })
+    init = function()
+      vim.g.trae_disable_autocompletion = true
+      vim.g.trae_no_map_tab = true
+      vim.g.trae_disable_bindings = true
     end,
+    opts = {
+      sources = {
+        { name = "trae" },
+        { name = "nvim_lsp" },
+        { name = "luasnip" },
+        { name = "buffer" },
+        { name = "nvim_lua" },
+        { name = "async_path" },
+      },
+      matching = {
+        disallow_partial_fuzzy_matching = false,
+      },
+      performance = {
+        async_budget = 1,
+        max_view_entries = 120,
+      },
+      mapping = cmp.mapping.preset.insert({
+        ["<C-p>"] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
+        ["<C-n>"] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
+        ["<C-d>"] = cmp.mapping.scroll_docs(-4),
+        ["<C-f>"] = cmp.mapping.scroll_docs(4),
+        ["<C-w>"] = cmp.mapping.abort(),
+        ["<Tab>"] = cmp.mapping(function(fallback)
+          if cmp.visible() then
+            cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+          elseif require("luasnip").expand_or_locally_jumpable() then
+            require("luasnip").expand_or_jump()
+          else
+            fallback()
+          end
+        end, { "i", "s" }),
+        ["<S-Tab>"] = cmp.mapping(function(fallback)
+          if cmp.visible() then
+            cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+          elseif require("luasnip").jumpable(-1) then
+            require("luasnip").jump(-1)
+          else
+            fallback()
+          end
+        end, { "i", "s" }),
+        ["<CR>"] = cmp.mapping({
+          i = function(fallback)
+            if cmp.visible() and cmp.get_active_entry() then
+              cmp.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = false })
+            else
+              fallback()
+            end
+          end,
+          s = cmp.mapping.confirm({ select = true }),
+          c = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true }),
+        }),
+      }),
+      snippet = {
+        expand = function(args)
+          require("luasnip").lsp_expand(args.body)
+        end,
+      },
+    },
   },
 
   {
@@ -83,14 +124,6 @@ return {
       { "andymass/vim-matchup", init = require("configs.matchup") },
       { "hiphish/rainbow-delimiters.nvim", config = require("configs.rainbow_delims") },
     },
-  },
-
-  {
-    "nvim-telescope/telescope.nvim",
-    opts = function(_, opts)
-      require("telescope").load_extension("persisted")
-      return opts
-    end,
   },
 
   {
@@ -127,6 +160,9 @@ return {
       autoload = true,
       follow_cwd = true,
       use_git_branch = true,
+      should_save = function()
+        return vim.bo.filetype == "Nvdash" and false or true
+      end,
     },
   },
   {
@@ -208,7 +244,15 @@ return {
     "git@code.byted.org:chenjiaqi.cposture/codeverse.vim.git",
     lazy = true,
     event = "InsertEnter",
+    init = function()
+      vim.g.trae_disable_autocompletion = true
+      vim.g.trae_no_map_tab = true
+      vim.g.trae_disable_bindings = true
+    end,
     config = function()
+      vim.g.trae_disable_autocompletion = true
+      vim.g.trae_no_map_tab = true
+      vim.g.trae_disable_bindings = true
       require("trae").setup()
     end,
   },
@@ -370,6 +414,26 @@ return {
         syncFile = { n = ",v" },
         nextInput = { n = "<Tab>" },
         prevInput = { n = "<S-Tab>" },
+      },
+    },
+  },
+
+  {
+    "folke/edgy.nvim",
+    lazy = true,
+    event = { "CursorHold", "CursorHoldI" },
+    config = require("configs.edgy"),
+    dependencies = {
+      {
+        "nvim-tree/nvim-tree.lua",
+        lazy = true,
+        cmd = {
+          "NvimTreeToggle",
+          "NvimTreeOpen",
+          "NvimTreeFindFile",
+          "NvimTreeFindFileToggle",
+          "NvimTreeRefresh",
+        },
       },
     },
   },

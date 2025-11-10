@@ -1,5 +1,5 @@
 return function()
-  require("lspsaga").setup {
+  require("lspsaga").setup({
     -- Breadcrumbs: https://nvimdev.github.io/lspsaga/breadcrumbs/
     symbol_in_winbar = {
       enable = true,
@@ -106,5 +106,5 @@ return function()
       scroll_up = "<C-u>",
     },
     request_timeout = 3000,
-  }
+  })
 end

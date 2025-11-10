@@ -1,5 +1,5 @@
 return function()
-  require("project").setup {
+  require("project").setup({
     manual_mode = false,
     detection_methods = { "pattern" },
     patterns = { "=tcc_monorepo", "go.mod", ".git" },
@@ -8,6 +8,6 @@ return function()
     exclude_dirs = {},
     show_hidden = false,
     scope_chdir = "global",
-    datapath = vim.fn.stdpath "data",
-  }
+    datapath = vim.fn.stdpath("data"),
+  })
 end

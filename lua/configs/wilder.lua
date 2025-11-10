@@ -1,14 +1,14 @@
 return function()
-  local wilder = require "wilder"
+  local wilder = require("wilder")
 
   wilder.set_option("use_python_remote_plugin", 0)
   wilder.set_option("pipeline", {
     wilder.branch(
-      wilder.cmdline_pipeline {
+      wilder.cmdline_pipeline({
         use_python = 0,
         fuzzy = 1,
         fuzzy_filter = wilder.lua_fzy_filter(),
-      },
+      }),
       wilder.vim_search_pipeline(),
       {
         wilder.check(function(_, x)
@@ -19,7 +19,7 @@ return function()
     ),
   })
 
-  local popupmenu_renderer = wilder.popupmenu_renderer(wilder.popupmenu_border_theme {
+  local popupmenu_renderer = wilder.popupmenu_renderer(wilder.popupmenu_border_theme({
     max_height = "30%",
     border = "rounded",
     highlights = {
@@ -32,32 +32,32 @@ return function()
     left = {
       " ",
       wilder.popupmenu_devicons(),
-      wilder.popupmenu_buffer_flags {
+      wilder.popupmenu_buffer_flags({
         flags = " a + ",
-      },
+      }),
     },
     right = {
       " ",
       wilder.popupmenu_scrollbar(),
     },
-  })
+  }))
 
-  local wildmenu_renderer = wilder.wildmenu_renderer {
+  local wildmenu_renderer = wilder.wildmenu_renderer({
     apply_incsearch_fix = false,
     highlighter = wilder.lua_fzy_highlighter(),
     separator = " · ",
     left = { " ", wilder.wildmenu_spinner(), " " },
     right = { " ", wilder.wildmenu_index() },
-  }
+  })
 
   wilder.set_option(
     "renderer",
-    wilder.renderer_mux {
+    wilder.renderer_mux({
       [":"] = popupmenu_renderer,
       ["/"] = wildmenu_renderer,
       substitute = wildmenu_renderer,
-    }
+    })
   )
 
-  require("wilder").setup { modes = { ":", "/", "?" } }
+  require("wilder").setup({ modes = { ":", "/", "?" } })
 end

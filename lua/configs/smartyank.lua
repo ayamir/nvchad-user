@@ -1,5 +1,5 @@
 return function()
-  require("smartyank").setup {
+  require("smartyank").setup({
     -- disabled here since highlight on yank is already enabled
     highlight = { enabled = false },
     clipboard = { enabled = true },
@@ -17,5 +17,5 @@ return function()
     },
     -- copy indiscriminately
     validate_yank = false,
-  }
+  })
 end

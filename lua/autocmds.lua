@@ -1,11 +1,11 @@
-require "nvchad.autocmds"
+require("nvchad.autocmds")
 
 local autocmd = {}
 
 vim.api.nvim_create_autocmd("BufWritePre", {
   pattern = "*",
   callback = function(args)
-    require("conform").format { bufnr = args.buf }
+    require("conform").format({ bufnr = args.buf })
   end,
 })
 
@@ -19,7 +19,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
       and vim.bo[vim.api.nvim_win_get_buf(layout[2])].filetype == "NvimTree"
       and layout[3] == nil
     then
-      vim.api.nvim_command [[confirm quit]]
+      vim.api.nvim_command([[confirm quit]])
     end
   end,
 })
@@ -60,12 +60,12 @@ function autocmd.nvim_create_augroups(definitions)
   for group_name, definition in pairs(definitions) do
     -- Prepend an underscore to avoid name clashes
     vim.api.nvim_command("augroup _" .. group_name)
-    vim.api.nvim_command "autocmd!"
+    vim.api.nvim_command("autocmd!")
     for _, def in ipairs(definition) do
       local command = table.concat(vim.iter({ "autocmd", def }):flatten(math.huge):totable(), " ")
       vim.api.nvim_command(command)
     end
-    vim.api.nvim_command "augroup END"
+    vim.api.nvim_command("augroup END")
   end
 end
 
