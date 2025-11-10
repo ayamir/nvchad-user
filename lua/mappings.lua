@@ -91,7 +91,7 @@ end, { noremap = true, silent = true })
 map("n", "<leader>tl", function()
   require("neotest").run.run_last()
 end, { noremap = true, silent = true })
-map("n", "<leader>to", ":Neotest output-panel", { noremap = true, silent = true })
+map("n", "<leader>to", ":Neotest output-panel<CR>", { noremap = true, silent = true })
 
 map("n", "mx", ":BookmarksMark<CR>", { noremap = true, silent = true })
 map("n", "mq", ":BookmarksQuickMark<CR>", { noremap = true, silent = true })
