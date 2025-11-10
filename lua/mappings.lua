@@ -35,6 +35,11 @@ map("n", "<A-l>", ":SmartResizeRight<CR>", { noremap = true, silent = true })
 map("n", "<A-j>", ":SmartResizeDown<CR>", { noremap = true, silent = true })
 map("n", "<A-k>", ":SmartResizeUp<CR>", { noremap = true, silent = true })
 
+map("t", "<C-w>h", "<cmd>wincmd h<CR>", { noremap = true, silent = true })
+map("t", "<C-w>l", "<cmd>wincmd l<CR>", { noremap = true, silent = true })
+map("t", "<C-w>j", "<cmd>wincmd j<CR>", { noremap = true, silent = true })
+map("t", "<C-w>k", "<cmd>wincmd k<CR>", { noremap = true, silent = true })
+
 map("n", "<C-h>", ":SmartCursorMoveLeft<CR>", { noremap = true, silent = true })
 map("n", "<C-l>", ":SmartCursorMoveRight<CR>", { noremap = true, silent = true })
 map("n", "<C-j>", ":SmartCursorMoveDown<CR>", { noremap = true, silent = true })
