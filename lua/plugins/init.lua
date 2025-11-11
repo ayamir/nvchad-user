@@ -453,4 +453,14 @@ return {
       },
     },
   },
+
+  {
+    "nvzone/floaterm",
+    dependencies = "nvzone/volt",
+    opts = {
+      border = false,
+      size = { h = 70, w = 80 },
+    },
+    cmd = "FloatermToggle",
+  },
 }

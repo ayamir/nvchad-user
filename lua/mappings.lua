@@ -71,10 +71,7 @@ end, { noremap = true, silent = true })
 map({ "n", "i", "t" }, "<A-\\>", function()
   require("nvchad.term").toggle({ pos = "vsp", id = "VerticalTerm" })
 end, { noremap = true, silent = true })
-
-map({ "n", "i", "t" }, "<A-d>", function()
-  require("nvchad.term").toggle({ pos = "float", id = "FloatTerm" })
-end, { noremap = true, silent = true })
+map({ "n", "i", "t" }, "<A-d>", "<cmd>FloatermToggle<CR>", { noremap = true, silent = true })
 
 map("n", "<leader>lr", ":LspStart<CR>", { noremap = true, silent = true })
 map("n", "<leader>li", ":LspInfo<CR>", { noremap = true, silent = true })
@@ -151,3 +148,5 @@ end, { noremap = true, silent = true })
 
 map("n", "<leader>fr", ":Telescope resume<CR>", { noremap = true, silent = true })
 map("n", "<leader>fR", ":FzfLua resume<CR>", { noremap = true, silent = true })
+
+map("n", "<leader>s", ":Grugfar<CR>", { noremap = true, silent = true })
