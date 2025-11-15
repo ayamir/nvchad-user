@@ -127,6 +127,21 @@ return {
   },
 
   {
+    "lewis6991/gitsigns.nvim",
+    opts = {
+      auto_attach = true,
+      signcolumn = true,
+      sign_priority = 6,
+      update_debounce = 100,
+      word_diff = false,
+      current_line_blame = true,
+      diff_opts = { internal = true },
+      watch_gitdir = { follow_files = true },
+      current_line_blame_opts = { delay = 1000, virt_text = true, virtual_text_pos = "eol" },
+    },
+  },
+
+  {
     "karb94/neoscroll.nvim",
     lazy = true,
     event = { "BufReadPost" },
@@ -316,7 +331,13 @@ return {
   {
     "ayamir/bookmarks.nvim",
     lazy = true,
-    cmd = { "BookmarksGoto" },
+    cmd = {
+      "BookmarksGoto",
+      "BookmarksMark",
+      "BookmarksQuickMark",
+      "BookmarksGotoNext",
+      "BookmarksGotoPrev",
+    },
     dependencies = {
       { "kkharji/sqlite.lua" },
       { "stevearc/dressing.nvim" }, -- optional: better UI
