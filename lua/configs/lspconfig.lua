@@ -72,7 +72,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 vim.lsp.config("*", { capabilities = capabilities, on_init = on_init })
 
-local servers = { "gopls", "jsonls" }
+local servers = { "gopls", "jsonls", "zuban" }
 vim.lsp.enable(servers)
 vim.lsp.config("gopls", {
   cmd = { "gopls", "-remote.debug=:0", "-remote=auto" },
@@ -176,5 +176,18 @@ vim.lsp.config("jsonls", {
         },
       },
     },
+  },
+})
+
+vim.lsp.config("zuban", {
+  cmd = { "zuban", "server" },
+  filetypes = { "python" },
+  root_markers = {
+    "pyproject.toml",
+    "setup.py",
+    "setup.cfg",
+    "requirements.txt",
+    "Pipfile",
+    ".git",
   },
 })

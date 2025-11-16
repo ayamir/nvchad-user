@@ -116,6 +116,8 @@ return {
         "go",
         "toml",
         "json",
+        "python",
+        "rust",
       },
     },
     dependencies = {

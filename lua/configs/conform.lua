@@ -4,6 +4,7 @@ local options = {
     go = { "gofumpt", "goimports", "gofmt" },
     rust = { "rustfmt", lsp_format = "fallback" },
     json = { "prettier" },
+    python = { "ruff", "black", "isort" },
   },
 
   format_on_save = {
