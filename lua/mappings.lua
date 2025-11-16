@@ -1,153 +1,284 @@
 require("nvchad.mappings")
 
-local map = vim.keymap.set
-local gitsigns = require("gitsigns")
+local bind = require("keymap.bind")
+local map_cr = bind.map_cr
+local map_cmd = bind.map_cmd
+local map_callback = bind.map_callback
 
-map("n", "<C-n>", function()
-  require("edgy").toggle("left")
-end, { noremap = true, silent = true })
-map("n", "<A-i>", function()
-  require("nvchad.tabufline").next()
-end, { noremap = true, silent = true, desc = "buffer: Switch to next" })
+local mappings = {
+  -- NvChad 核心功能映射
+  nvchad_core = {
+    -- 文件树切换
+    ["n|<C-n>"] = map_callback(function()
+        require("edgy").toggle("left")
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Toggle filetree"),
 
-map("n", "<A-o>", function()
-  require("nvchad.tabufline").prev()
-end, { noremap = true, silent = true, desc = "buffer: Switch to prev" })
+    -- Buffer 管理
+    ["n|<A-i>"] = map_callback(function()
+        require("nvchad.tabufline").next()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Next buffer"),
+    ["n|<A-o>"] = map_callback(function()
+        require("nvchad.tabufline").prev()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Prev buffer"),
+    ["n|<A-S-i>"] = map_callback(function()
+        require("nvchad.tabufline").move_buf(1)
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Move buffer right"),
+    ["n|<A-S-o>"] = map_callback(function()
+        require("nvchad.tabufline").move_buf(-1)
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Move buffer left"),
+    ["n|<A-q>"] = map_callback(function()
+        require("nvchad.tabufline").close_buffer()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Close buffer"),
+    ["n|<A-S-q>"] = map_callback(function()
+        require("nvchad.tabufline").closeAllBufs(false)
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Close all buffers"),
 
-map("n", "<A-S-i>", function()
-  require("nvchad.tabufline").move_buf(1)
-end, { noremap = true, silent = true, desc = "buffer: Switch to next" })
+    -- 终端管理
+    ["nit|<C-\\>"] = map_callback(function()
+        require("nvchad.term").toggle({ pos = "sp", id = "HorizontalTerm" })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Toggle horizontal term"),
+    ["nit|<A-\\>"] = map_callback(function()
+        require("nvchad.term").toggle({ pos = "vsp", id = "VerticalTerm" })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Toggle vertical term"),
+    ["nit|<A-d>"] = map_cmd("<cmd>FloatermToggle<cr>"):with_noremap():with_silent():with_desc("Toggle floating term"),
 
-map("n", "<A-S-o>", function()
-  require("nvchad.tabufline").move_buf(-1)
-end, { noremap = true, silent = true, desc = "buffer: Switch to prev" })
+    -- LSP 快速操作
+    ["n|<leader>lr"] = map_cr("LspStart"):with_noremap():with_silent():with_desc("Start LSP"),
+    ["n|<leader>li"] = map_cr("LspInfo"):with_noremap():with_silent():with_desc("LSP info"),
+  },
 
-map("n", "<A-q>", function()
-  require("nvchad.tabufline").close_buffer()
-end, { noremap = true, silent = true, desc = "buffer: Close others" })
+  -- 窗口与分屏管理
+  window_management = {
+    -- 窗口大小调整
+    ["n|<A-h>"] = map_cr("SmartResizeLeft"):with_noremap():with_silent():with_desc("Resize window left"),
+    ["n|<A-l>"] = map_cr("SmartResizeRight"):with_noremap():with_silent():with_desc("Resize window right"),
+    ["n|<A-j>"] = map_cr("SmartResizeDown"):with_noremap():with_silent():with_desc("Resize window down"),
+    ["n|<A-k>"] = map_cr("SmartResizeUp"):with_noremap():with_silent():with_desc("Resize window up"),
 
-map("n", "<A-S-q>", function()
-  require("nvchad.tabufline").closeAllBufs(false)
-end, { noremap = true, silent = true, desc = "buffer: Close others" })
+    -- 窗口间移动
+    ["t|<C-w>h"] = map_cr("wincmd h"):with_noremap():with_silent():with_desc("Move to left window (terminal)"),
+    ["t|<C-w>l"] = map_cr("wincmd l"):with_noremap():with_silent():with_desc("Move to right window (terminal)"),
+    ["t|<C-w>j"] = map_cr("wincmd j"):with_noremap():with_silent():with_desc("Move to lower window (terminal)"),
+    ["t|<C-w>k"] = map_cr("wincmd k"):with_noremap():with_silent():with_desc("Move to upper window (terminal)"),
 
-map("n", "<A-h>", ":SmartResizeLeft<CR>", { noremap = true, silent = true })
-map("n", "<A-l>", ":SmartResizeRight<CR>", { noremap = true, silent = true })
-map("n", "<A-j>", ":SmartResizeDown<CR>", { noremap = true, silent = true })
-map("n", "<A-k>", ":SmartResizeUp<CR>", { noremap = true, silent = true })
+    -- 智能光标移动
+    ["n|<C-h>"] = map_cr("SmartCursorMoveLeft"):with_noremap():with_silent():with_desc("Smart cursor left"),
+    ["n|<C-l>"] = map_cr("SmartCursorMoveRight"):with_noremap():with_silent():with_desc("Smart cursor right"),
+    ["n|<C-j>"] = map_cr("SmartCursorMoveDown"):with_noremap():with_silent():with_desc("Smart cursor down"),
+    ["n|<C-k>"] = map_cr("SmartCursorMoveUp"):with_noremap():with_silent():with_desc("Smart cursor up"),
+  },
 
-map("t", "<C-w>h", "<cmd>wincmd h<CR>", { noremap = true, silent = true })
-map("t", "<C-w>l", "<cmd>wincmd l<CR>", { noremap = true, silent = true })
-map("t", "<C-w>j", "<cmd>wincmd j<CR>", { noremap = true, silent = true })
-map("t", "<C-w>k", "<cmd>wincmd k<CR>", { noremap = true, silent = true })
+  -- 编辑操作优化
+  edit_operations = {
+    -- 可视化模式增强
+    ["v|J"] = map_cmd(":m '>+1<CR>gv=gv"):with_noremap():with_silent():with_desc("Move line down (visual)"),
+    ["v|K"] = map_cmd(":m '<-2<CR>gv=gv"):with_noremap():with_silent():with_desc("Move line up (visual)"),
+    ["v|<"] = map_cmd("<gv"):with_noremap():with_silent():with_desc("Indent left (visual)"),
+    ["v|>"] = map_cmd(">gv"):with_noremap():with_silent():with_desc("Indent right (visual)"),
 
-map("n", "<C-h>", ":SmartCursorMoveLeft<CR>", { noremap = true, silent = true })
-map("n", "<C-l>", ":SmartCursorMoveRight<CR>", { noremap = true, silent = true })
-map("n", "<C-j>", ":SmartCursorMoveDown<CR>", { noremap = true, silent = true })
-map("n", "<C-k>", ":SmartCursorMoveUp<CR>", { noremap = true, silent = true })
+    -- 行操作增强
+    ["n|Y"] = map_cmd("y$"):with_noremap():with_silent():with_desc("Yank to line end"),
+    ["n|D"] = map_cmd("d$"):with_noremap():with_silent():with_desc("Delete to line end"),
+    ["n|J"] = map_cmd("mzJ`z"):with_noremap():with_silent():with_desc("Join lines"),
 
-map("n", "<leader>w", ":HopWordMW<CR>", { noremap = true, silent = true })
-map("n", "<leader>j", ":HopLineMW<CR>", { noremap = true, silent = true })
-map("n", "<leader>k", ":HopLineMW<CR>", { noremap = true, silent = true })
+    -- 搜索结果居中
+    ["n|n"] = map_cmd("nzzzv"):with_noremap():with_silent():with_desc("Next search result (center)"),
+    ["n|N"] = map_cmd("Nzzzv"):with_noremap():with_silent():with_desc("Prev search result (center)"),
+  },
 
-map("v", "J", ":m '>+1<CR>gv=gv", { noremap = true, silent = true })
-map("v", "K", ":m '<-2<CR>gv=gv", { noremap = true, silent = true })
-map("v", "<", "<gv", { noremap = true, silent = true })
-map("v", ">", ">gv", { noremap = true, silent = true })
+  -- 插件映射：快速跳转
+  plugin_jump = {
+    -- Hop.nvim 快速跳转
+    ["n|<leader>w"] = map_cr("HopWordMW"):with_noremap():with_silent():with_desc("Hop to word"),
+    ["n|<leader>j"] = map_cr("HopLineMW"):with_noremap():with_silent():with_desc("Hop to line (down)"),
+    ["n|<leader>k"] = map_cr("HopLineMW"):with_noremap():with_silent():with_desc("Hop to line (up)"),
 
-map("n", "Y", "y$", { noremap = true, silent = true })
-map("n", "D", "d$", { noremap = true, silent = true })
-map("n", "n", "nzzzv", { noremap = true, silent = true })
-map("n", "N", "Nzzzv", { noremap = true, silent = true })
-map("n", "J", "mzJ`z", { noremap = true, silent = true })
+    -- Spider.nvim 智能单词跳转
+    ["nox|w"] = map_callback(function()
+        require("spider").motion("w")
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Spider: Next word"),
+    ["nox|e"] = map_callback(function()
+        require("spider").motion("e")
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Spider: End of word"),
+    ["nox|b"] = map_callback(function()
+        require("spider").motion("b")
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Spider: Prev word"),
 
-map("o", "m", function()
-  require("tsht").nodes()
-end, { noremap = true, silent = true })
+    -- Treesitter 节点选择
+    ["o|m"] = map_callback(function()
+        require("tsht").nodes()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("TS: Select node"),
+  },
 
-map({ "n", "i", "t" }, "<C-\\>", function()
-  require("nvchad.term").toggle({ pos = "sp", id = "HorizontalTerm" })
-end, { noremap = true, silent = true })
+  -- 插件映射：Git 功能
+  plugin_git = {
+    -- 代码变更导航
+    ["n|]g"] = map_callback(function()
+        if vim.wo.diff then
+          return "]g"
+        end
+        vim.schedule(function()
+          require("gitsigns").nav_hunk("next")
+        end)
+        return "<Ignore>"
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_expr()
+      :with_desc("Next git hunk"),
 
-map({ "n", "i", "t" }, "<A-\\>", function()
-  require("nvchad.term").toggle({ pos = "vsp", id = "VerticalTerm" })
-end, { noremap = true, silent = true })
-map({ "n", "i", "t" }, "<A-d>", "<cmd>FloatermToggle<CR>", { noremap = true, silent = true })
+    ["n|[g"] = map_callback(function()
+        if vim.wo.diff then
+          return "[g"
+        end
+        vim.schedule(function()
+          require("gitsigns").nav_hunk("prev")
+        end)
+        return "<Ignore>"
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_expr()
+      :with_desc("Prev git hunk"),
 
-map("n", "<leader>lr", ":LspStart<CR>", { noremap = true, silent = true })
-map("n", "<leader>li", ":LspInfo<CR>", { noremap = true, silent = true })
+    -- 代码变更操作
+    ["n|<leader>gs"] = map_callback(function()
+        require("gitsigns").stage_hunk()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Stage git hunk"),
+    ["v|<leader>gs"] = map_callback(function()
+        require("gitsigns").stage_hunk({ vim.fn.line("."), vim.fn.line("v") })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Stage git hunk (visual)"),
+    ["n|<leader>gr"] = map_callback(function()
+        require("gitsigns").reset_hunk()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Reset git hunk"),
+    ["v|<leader>gr"] = map_callback(function()
+        require("gitsigns").reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Reset git hunk (visual)"),
+    ["n|<leader>gR"] = map_callback(function()
+        require("gitsigns").reset_buffer()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Reset git buffer"),
+    ["n|<leader>gp"] = map_callback(function()
+        require("gitsigns").preview_hunk()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Preview git hunk"),
+    ["n|<leader>gb"] = map_callback(function()
+        require("gitsigns").blame_line({ full = true })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Git blame"),
+  },
 
-map("n", "<leader>tc", function()
-  require("neotest").run.run()
-end, { noremap = true, silent = true })
-map("n", "<leader>tf", function()
-  require("neotest").run.run(vim.fn.expand("%"))
-end, { noremap = true, silent = true })
-map("n", "<leader>td", function()
-  require("neotest").run.run({ strategy = "dap" })
-end, { noremap = true, silent = true })
-map("n", "<leader>tl", function()
-  require("neotest").run.run_last()
-end, { noremap = true, silent = true })
-map("n", "<leader>to", ":Neotest output-panel<CR>", { noremap = true, silent = true })
+  -- 插件映射：测试功能
+  plugin_test = {
+    ["n|<leader>tc"] = map_callback(function()
+        require("neotest").run.run()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Run nearest test"),
+    ["n|<leader>tf"] = map_callback(function()
+        require("neotest").run.run(vim.fn.expand("%"))
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Run file tests"),
+    ["n|<leader>td"] = map_callback(function()
+        require("neotest").run.run({ strategy = "dap" })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug nearest test"),
+    ["n|<leader>tl"] = map_callback(function()
+        require("neotest").run.run_last()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Run last test"),
+    ["n|<leader>to"] = map_cr("Neotest output-panel"):with_noremap():with_silent():with_desc("Toggle test output"),
+  },
 
-map("n", "mx", ":BookmarksMark<CR>", { noremap = true, silent = true })
-map("n", "mq", ":BookmarksQuickMark<CR>", { noremap = true, silent = true })
-map("n", "mj", ":BookmarksGotoNext<CR>", { noremap = true, silent = true })
-map("n", "mk", ":BookmarksGotoPrev<CR>", { noremap = true, silent = true })
-map("n", "mo", ":BookmarksGoto<CR>", { noremap = true, silent = true })
+  -- 插件映射：书签功能
+  plugin_bookmarks = {
+    ["n|mx"] = map_cr("BookmarksMark"):with_noremap():with_silent():with_desc("Add bookmark"),
+    ["n|mq"] = map_cr("BookmarksQuickMark"):with_noremap():with_silent():with_desc("Quick bookmark"),
+    ["n|mj"] = map_cr("BookmarksGotoNext"):with_noremap():with_silent():with_desc("Next bookmark"),
+    ["n|mk"] = map_cr("BookmarksGotoPrev"):with_noremap():with_silent():with_desc("Prev bookmark"),
+    ["n|mo"] = map_cr("BookmarksGoto"):with_noremap():with_silent():with_desc("Goto bookmark"),
+  },
 
-map({ "n", "x", "o" }, "w", function()
-  require("spider").motion("w")
-end, { noremap = true, silent = true })
-map({ "n", "x", "o" }, "e", function()
-  require("spider").motion("e")
-end, { noremap = true, silent = true })
-map({ "n", "x", "o" }, "b", function()
-  require("spider").motion("b")
-end, { noremap = true, silent = true })
+  -- 插件映射：搜索工具
+  plugin_search = {
+    ["n|<leader>fr"] = map_cr("Telescope resume"):with_noremap():with_silent():with_desc("Resume Telescope"),
+    ["n|<leader>fR"] = map_cr("FzfLua resume"):with_noremap():with_silent():with_desc("Resume FzfLua"),
+    ["n|<leader>s"] = map_cr("GrugFar"):with_noremap():with_silent():with_desc("Grep/replace (GrugFar)"),
+  },
 
-map("n", "]g", function()
-  if vim.wo.diff then
-    return "]g"
-  end
-  vim.schedule(function()
-    gitsigns.nav_hunk("next")
-  end)
-  return "<Ignore>"
-end, { noremap = true, silent = true, expr = true })
-map("n", "[g", function()
-  if vim.wo.diff then
-    return "[g"
-  end
-  vim.schedule(function()
-    gitsigns.nav_hunk("prev")
-  end)
-  return "<Ignore>"
-end, { noremap = true, silent = true, expr = true })
-map("n", "<leader>gs", function()
-  gitsigns.stage_hunk()
-end, { noremap = true, silent = true })
-map("v", "<leader>gs", function()
-  gitsigns.stage_hunk({ vim.fn.line("."), vim.fn.line("v") })
-end, { noremap = true, silent = true })
-map("n", "<leader>gr", function()
-  gitsigns.reset_hunk()
-end, { noremap = true, silent = true })
-map("v", "<leader>gr", function()
-  gitsigns.reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
-end, { noremap = true, silent = true })
-map("n", "<leader>gR", function()
-  gitsigns.reset_buffer()
-end, { noremap = true, silent = true })
-map("n", "<leader>gp", function()
-  gitsigns.preview_hunk()
-end, { noremap = true, silent = true })
-map("n", "<leader>gb", function()
-  gitsigns.blame_line({ full = true })
-end, { noremap = true, silent = true })
+  -- 其他功能映射
+  other = {
+    ["n|<leader>e"] = map_cr("e"):with_noremap():with_silent():with_desc("Refresh LSP symbols"),
+  },
+}
 
-map("n", "<leader>fr", ":Telescope resume<CR>", { noremap = true, silent = true })
-map("n", "<leader>fR", ":FzfLua resume<CR>", { noremap = true, silent = true })
+-- 加载所有映射
+for _, mapping in pairs(mappings) do
+  bind.nvim_load_mapping(mapping)
+end
 
-map("n", "<leader>s", ":GrugFar<CR>", { noremap = true, silent = true })
-map("n", "<leader>e", ":e<CR>", { noremap = true, silent = true })
+return mappings
