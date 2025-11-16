@@ -149,5 +149,5 @@ end, { noremap = true, silent = true })
 map("n", "<leader>fr", ":Telescope resume<CR>", { noremap = true, silent = true })
 map("n", "<leader>fR", ":FzfLua resume<CR>", { noremap = true, silent = true })
 
-map("n", "<leader>s", ":Grugfar<CR>", { noremap = true, silent = true })
+map("n", "<leader>s", ":GrugFar<CR>", { noremap = true, silent = true })
 map("n", "<leader>e", ":e<CR>", { noremap = true, silent = true })
