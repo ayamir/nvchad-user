@@ -67,7 +67,7 @@ local mappings = {
       :with_noremap()
       :with_silent()
       :with_desc("Toggle vertical term"),
-    ["nit|<A-d>"] = map_cmd("<cmd>FloatermToggle<cr>"):with_noremap():with_silent():with_desc("Toggle floating term"),
+    ["nit|<A-d>"] = map_cmd("FloatermToggle"):with_cmd():with_noremap():with_silent():with_desc("Toggle floating term"),
 
     -- LSP 快速操作
     ["n|<leader>lr"] = map_cr("LspStart"):with_noremap():with_silent():with_desc("Start LSP"),
@@ -83,10 +83,26 @@ local mappings = {
     ["n|<A-k>"] = map_cr("SmartResizeUp"):with_noremap():with_silent():with_desc("Resize window up"),
 
     -- 窗口间移动
-    ["t|<C-w>h"] = map_cr("wincmd h"):with_noremap():with_silent():with_desc("Move to left window (terminal)"),
-    ["t|<C-w>l"] = map_cr("wincmd l"):with_noremap():with_silent():with_desc("Move to right window (terminal)"),
-    ["t|<C-w>j"] = map_cr("wincmd j"):with_noremap():with_silent():with_desc("Move to lower window (terminal)"),
-    ["t|<C-w>k"] = map_cr("wincmd k"):with_noremap():with_silent():with_desc("Move to upper window (terminal)"),
+    ["t|<C-w>h"] = map_cmd("wincmd h")
+      :with_cmd()
+      :with_noremap()
+      :with_silent()
+      :with_desc("Move to left window (terminal)"),
+    ["t|<C-w>l"] = map_cmd("wincmd l")
+      :with_cmd()
+      :with_noremap()
+      :with_silent()
+      :with_desc("Move to right window (terminal)"),
+    ["t|<C-w>j"] = map_cmd("wincmd j")
+      :with_cmd()
+      :with_noremap()
+      :with_silent()
+      :with_desc("Move to lower window (terminal)"),
+    ["t|<C-w>k"] = map_cmd("wincmd k")
+      :with_cmd()
+      :with_noremap()
+      :with_silent()
+      :with_desc("Move to upper window (terminal)"),
 
     -- 智能光标移动
     ["n|<C-h>"] = map_cr("SmartCursorMoveLeft"):with_noremap():with_silent():with_desc("Smart cursor left"),

@@ -82,6 +82,12 @@ function rhs_options:with_nowait()
   return self
 end
 
+---@return map_rhs
+function rhs_options:with_cmd()
+  self.cmd = ("<Cmd>%s<CR>"):format(self.cmd)
+  return self
+end
+
 ---@param num number
 ---@return map_rhs
 function rhs_options:with_buffer(num)
