@@ -104,9 +104,9 @@ vim.lsp.config("gopls", {
   },
   settings = {
     gopls = {
-      staticcheck = true,
+      staticcheck = false,
       semanticTokens = true,
-      usePlaceholders = true,
+      usePlaceholders = false,
       completeUnimported = true,
       symbolMatcher = "Fuzzy",
       buildFlags = { "-tags", "integration" },
