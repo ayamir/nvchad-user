@@ -67,7 +67,24 @@ local mappings = {
       :with_noremap()
       :with_silent()
       :with_desc("Toggle vertical term"),
-    ["nit|<A-d>"] = map_cmd("FloatermToggle"):with_cmd():with_noremap():with_silent():with_desc("Toggle floating term"),
+    ["nit|<A-d>"] = map_callback(function()
+        require("nvchad.term").toggle({ pos = "float", id = "FloatTerm" })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Toggle floating term"),
+    ["nit|<A-c>"] = map_callback(function()
+        require("nvchad.term").toggle({ pos = "float", id = "coco" })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Toggle floating term: coco"),
+    ["nit|<A-g>"] = map_callback(function()
+        require("nvchad.term").toggle({ pos = "float", id = "lazygit" })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Toggle floating term: lazygit"),
 
     -- LSP 快速操作
     ["n|<leader>lr"] = map_cr("LspStart"):with_noremap():with_silent():with_desc("Start LSP"),
