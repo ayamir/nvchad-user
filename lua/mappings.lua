@@ -330,6 +330,16 @@ local mappings = {
   },
 }
 
+-- Goto buffer with <A-number>
+for i = 1, 9, 1 do
+  mappings.nvchad_core[string.format("n|<A-%s>", i)] = map_callback(function()
+      vim.api.nvim_set_current_buf(vim.t.bufs[i])
+    end)
+    :with_noremap()
+    :with_silent()
+    :with_desc("buffer: Goto buffer " .. tostring(i))
+end
+
 -- 加载所有映射
 for _, mapping in pairs(mappings) do
   bind.nvim_load_mapping(mapping)
