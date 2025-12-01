@@ -5,6 +5,18 @@ local map_cr = bind.map_cr
 local map_cmd = bind.map_cmd
 local map_callback = bind.map_callback
 
+local function get_visual_selection()
+  local save_reg = vim.fn.getreg("v") -- 备份 v 寄存器
+  local save_type = vim.fn.getregtype("v")
+
+  vim.cmd([[noau normal! "vy]]) -- 选区内容 -> v 寄存器
+  local text = vim.fn.getreg("v")
+  vim.fn.setreg("v", save_reg, save_type) -- 还原 v 寄存器
+
+  text = text:gsub("\n", "") -- 去掉换行，防止搜索串断裂
+  return #text > 0 and text or nil
+end
+
 local mappings = {
   -- NvChad 核心功能映射
   nvchad_core = {
@@ -299,7 +311,19 @@ local mappings = {
 
   -- 插件映射：搜索工具
   plugin_search = {
+    ["v|<leader>fs"] = map_callback(function()
+        local text = get_visual_selection()
+        if not text then
+          return
+        end
+        require("telescope.builtin").grep_string({ search = text })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Grep selection"),
+    ["n|<leader>fs"] = map_cr("Telescope grep_string"):with_noremap():with_silent():with_desc("Grep cword"),
     ["n|<leader>fr"] = map_cr("Telescope resume"):with_noremap():with_silent():with_desc("Resume Telescope"),
+    ["n|<leader>fm"] = map_cr("Telescope notify"):with_noremap():with_silent():with_desc("Notify history"),
     ["n|<leader>fR"] = map_cr("FzfLua resume"):with_noremap():with_silent():with_desc("Resume FzfLua"),
     ["n|<leader>s"] = map_cr("GrugFar"):with_noremap():with_silent():with_desc("Grep/replace (GrugFar)"),
   },
