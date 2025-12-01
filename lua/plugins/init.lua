@@ -505,7 +505,7 @@ return {
   },
 
   {
-    "nvzone/floaterm",
+    "ayamir/floaterm",
     dependencies = "nvzone/volt",
     opts = {
       border = false,
