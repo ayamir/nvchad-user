@@ -18,7 +18,7 @@ return function()
       },
       -- Filter severities up to the diagnostics level setting
       severity = vim.tbl_filter(function(level)
-        return level <= vim.diagnostic.severity["HINT"]
+        return level <= vim.diagnostic.severity["WARN"]
       end, {
         vim.diagnostic.severity.ERROR,
         vim.diagnostic.severity.WARN,
