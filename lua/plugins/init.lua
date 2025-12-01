@@ -530,4 +530,11 @@ return {
       })
     end,
   },
+
+  {
+    "rachartier/tiny-inline-diagnostic.nvim",
+    event = "VeryLazy",
+    priority = 1000,
+    config = require("configs.tiny-inline-diagnostic"),
+  },
 }
