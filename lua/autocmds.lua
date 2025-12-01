@@ -2,6 +2,28 @@ require("nvchad.autocmds")
 
 local autocmd = {}
 
+-- 1. 取到已装 parser 的 language 列表
+local deps = require("settings").treesitter_deps or {}
+
+-- 2. language -> filetype 反向索引
+local ft_ok = {} -- key: filetype, value: true
+for _, lang in ipairs(deps) do
+  -- 一个 language 可能对应多个 filetype
+  for _, ft in ipairs(vim.treesitter.language.get_filetypes(lang)) do
+    ft_ok[ft] = true
+  end
+end
+
+-- 3. 只给这些 filetype 启动高亮
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("TSHighlight", { clear = true }),
+  callback = function(args)
+    if ft_ok[vim.bo[args.buf].filetype] then
+      vim.treesitter.start(args.buf) -- 自动识别 language
+    end
+  end,
+})
+
 vim.api.nvim_create_autocmd("User", {
   pattern = "PersistedSavePre",
   callback = function()

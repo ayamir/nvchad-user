@@ -114,20 +114,14 @@ return {
     "nvim-treesitter/nvim-treesitter",
     lazy = false,
     branch = "main",
+    build = function()
+      if #vim.api.nvim_list_uis() > 0 then
+        vim.api.nvim_command([[TSUpdate]])
+      end
+    end,
     config = function()
       vim.api.nvim_set_option_value("indentexpr", "v:lua.require'nvim-treesitter'.indentexpr()", {})
-      require("nvim-treesitter").install({
-        "bash",
-        "c",
-        "cpp",
-        "go",
-        "json",
-        "lua",
-        "markdown",
-        "markdown_inline",
-        "python",
-        "rust",
-      })
+      require("nvim-treesitter").install(require("settings")["treesitter_deps"])
     end,
     dependencies = {
       "mfussenegger/nvim-treehopper",
