@@ -509,4 +509,25 @@ return {
       },
     },
   },
+
+  {
+    "nvzone/floaterm",
+    dependencies = "nvzone/volt",
+    opts = {
+      border = false,
+      size = { h = 70, w = 80 },
+    },
+    cmd = "FloatermToggle",
+  },
+
+  {
+    "soulis-1256/eagle.nvim",
+    lazy = true,
+    cmd = "EagleWin",
+    config = function()
+      require("eagle").setup({
+        keyboard_mode = true,
+      })
+    end,
+  },
 }
