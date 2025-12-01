@@ -519,4 +519,15 @@ return {
     },
     cmd = "FloatermToggle",
   },
+
+  {
+    "soulis-1256/eagle.nvim",
+    lazy = true,
+    cmd = "EagleWin",
+    config = function()
+      require("eagle").setup({
+        keyboard_mode = true,
+      })
+    end,
+  },
 }

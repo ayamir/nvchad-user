@@ -72,6 +72,7 @@ local mappings = {
     -- LSP 快速操作
     ["n|<leader>lr"] = map_cr("LspStart"):with_noremap():with_silent():with_desc("Start LSP"),
     ["n|<leader>li"] = map_cr("LspInfo"):with_noremap():with_silent():with_desc("LSP info"),
+    ["n|K"] = map_cr("EagleWin"):with_noremap():with_silent():with_desc("Eagle window"),
   },
 
   -- 窗口与分屏管理
