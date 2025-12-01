@@ -92,7 +92,7 @@ local mappings = {
       :with_silent()
       :with_desc("Toggle floating term: coco"),
     ["nit|<A-g>"] = map_callback(function()
-        require("nvchad.term").toggle({ pos = "float", id = "lazygit" })
+        require("nvchad.term").toggle({ pos = "float", id = "lazygit", cmd = "lazygit" })
       end)
       :with_noremap()
       :with_silent()
