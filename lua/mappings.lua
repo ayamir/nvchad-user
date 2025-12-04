@@ -1,6 +1,7 @@
 require("nvchad.mappings")
 
 local bind = require("keymap.bind")
+local term = require("keymap.term")
 local map_cr = bind.map_cr
 local map_cmd = bind.map_cmd
 local map_callback = bind.map_callback
@@ -79,7 +80,23 @@ local mappings = {
       :with_noremap()
       :with_silent()
       :with_desc("Toggle vertical term"),
-    ["nit|<A-d>"] = map_cmd("FloatermToggle"):with_cmd():with_noremap():with_silent():with_desc("Toggle floating term"),
+    ["nt|<A-d>"] = map_callback(function()
+        term.toggle_all_terms()
+      end)
+      :with_cmd()
+      :with_noremap()
+      :with_silent()
+      :with_desc("Toggle floating term"),
+    ["t|<C-j>"] = map_callback(function()
+        term.move_term(1)
+      end)
+      :with_noremap()
+      :with_silent(),
+    ["t|<C-k>"] = map_callback(function()
+        term.move_term(-1)
+      end)
+      :with_noremap()
+      :with_silent(),
 
     -- LSP 快速操作
     ["n|<leader>lr"] = map_cr("LspStart"):with_noremap():with_silent():with_desc("Start LSP"),
