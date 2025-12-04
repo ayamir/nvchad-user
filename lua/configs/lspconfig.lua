@@ -104,6 +104,10 @@ vim.lsp.config("gopls", {
   },
   settings = {
     gopls = {
+      analyses = {
+        efaceany = false, -- 在此处禁用 efaceany
+        unusedparams = true,
+      },
       staticcheck = false,
       semanticTokens = true,
       usePlaceholders = false,
