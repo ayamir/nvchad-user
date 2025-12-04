@@ -277,17 +277,17 @@ return {
     end,
   },
 
-  {
-    "ayamir/garbage-day.nvim",
-    lazy = true,
-    event = "LspAttach",
-    config = function()
-      require("garbage-day").setup({
-        excluded_lsp_clients = { "null-ls" },
-        notifications = true,
-      })
-    end,
-  },
+  -- {
+  --   "ayamir/garbage-day.nvim",
+  --   lazy = true,
+  --   event = "LspAttach",
+  --   config = function()
+  --     require("garbage-day").setup({
+  --       excluded_lsp_clients = { "null-ls" },
+  --       notifications = true,
+  --     })
+  --   end,
+  -- },
 
   {
     "Wansmer/symbol-usage.nvim",
@@ -505,13 +505,18 @@ return {
   },
 
   {
-    "ayamir/floaterm",
-    dependencies = "nvzone/volt",
-    opts = {
-      border = false,
-      size = { h = 70, w = 80 },
+    "akinsho/toggleterm.nvim",
+    lazy = true,
+    version = "*",
+    cmd = {
+      "ToggleTerm",
+      "ToggleTermSetName",
+      "ToggleTermToggleAll",
+      "ToggleTermSendVisualLines",
+      "ToggleTermSendCurrentLine",
+      "ToggleTermSendVisualSelection",
     },
-    cmd = "FloatermToggle",
+    config = require("configs.toggleterm"),
   },
 
   {

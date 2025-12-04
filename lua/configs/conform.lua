@@ -5,6 +5,7 @@ local options = {
     rust = { "rustfmt", lsp_format = "fallback" },
     json = { "prettier" },
     python = { "ruff", "black", "isort" },
+    sh = { "shfmt" },
   },
 
   format_on_save = {
