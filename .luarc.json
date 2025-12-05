@@ -1,11 +1,3 @@
 {
-  "diagnostics.disable": ["different-requires"],
-    "workspace.library": [
-        "/data00/nvim-linux-x86_64/share/nvim/runtime/lua",
-        "/data00/home/liuguangtian.1024/.local/share/nvim/lazy/ui/nvchad_types",
-        "/data00/home/liuguangtian.1024/.local/share/nvim/lazy/lazy.nvim/lua/lazy",
-        "${3rd}/luv/library",
-        "${3rd}/luassert/library"
-    ]
+  "diagnostics.disable": ["different-requires"]
 }
-
