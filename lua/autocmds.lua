@@ -49,12 +49,55 @@ vim.api.nvim_create_autocmd("User", {
   end,
 })
 
-vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = "*",
-  callback = function(args)
-    require("conform").format({ bufnr = args.buf })
-  end,
-})
+-- format on save: 可动态开关
+local function enable_format_on_save(is_configured)
+  local group = vim.api.nvim_create_augroup("FormatOnSave", { clear = true })
+  vim.api.nvim_create_autocmd("BufWritePre", {
+    group = group,
+    pattern = "*",
+    callback = function(args)
+      require("conform").format({ bufnr = args.buf })
+    end,
+  })
+  if not is_configured then
+    vim.notify("FormatOnSave is enabled", vim.log.levels.INFO, { title = "FormatOnSave" })
+  end
+end
+
+local function disable_format_on_save(is_configured)
+  local ok = pcall(vim.api.nvim_del_augroup_by_name, "FormatOnSave")
+  if ok and not is_configured then
+    vim.notify("FormatOnSave is disabled", vim.log.levels.INFO, { title = "FormatOnSave" })
+  end
+end
+
+local function toggle_format_on_save()
+  local ok, autocmds = pcall(vim.api.nvim_get_autocmds, {
+    group = "FormatOnSave",
+    event = "BufWritePre",
+  })
+  if not ok or #autocmds == 0 then
+    enable_format_on_save(false)
+  else
+    disable_format_on_save(false)
+  end
+end
+
+-- 启动时默认启用一次（保持原来的行为）
+enable_format_on_save(true)
+
+-- 用户命令：手动格式化 + 动态开关
+vim.api.nvim_create_user_command("Format", function()
+  require("conform").format({
+    async = false,
+    timeout_ms = 500,
+    lsp_fallback = true,
+  })
+end, {})
+
+vim.api.nvim_create_user_command("FormatToggle", function()
+  toggle_format_on_save()
+end, {})
 
 vim.api.nvim_create_autocmd("BufEnter", {
   group = vim.api.nvim_create_augroup("NvimTreeAutoClose", { clear = true }),

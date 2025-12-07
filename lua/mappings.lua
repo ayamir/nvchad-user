@@ -344,6 +344,10 @@ local mappings = {
   -- 其他功能映射
   other = {
     ["n|<leader>e"] = map_cr("e"):with_noremap():with_silent():with_desc("Refresh LSP symbols"),
+    -- 切换保存时自动格式化
+    ["n|<A-f>"] = map_cr("FormatToggle"):with_noremap():with_silent():with_desc("Toggle format on save"),
+    -- 手动格式化当前缓冲区
+    ["n|<A-S-f>"] = map_cr("Format"):with_noremap():with_silent():with_desc("Format buffer"),
   },
 }
 
