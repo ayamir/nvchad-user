@@ -562,4 +562,32 @@ return {
       })
     end,
   },
+
+  {
+    "aaronhallaert/advanced-git-search.nvim",
+    cmd = { "AdvancedGitSearch" },
+    config = function()
+      require("telescope").setup({
+        extensions = {
+          advanced_git_search = {
+            diff_plugin = "diff_view",
+            how_builtin_git_pickers = false,
+            entry_default_author_or_date = "both",
+            keymaps = {
+              toggle_date_author = "<C-w>",
+              open_commit_in_browser = "<C-o>",
+              copy_commit_hash = "<C-y>",
+              copy_commit_patch = "<C-g>", -- telescope only
+              show_entire_commit = "<C-e>",
+            },
+          },
+        },
+      })
+
+      require("telescope").load_extension("advanced_git_search")
+    end,
+    dependencies = {
+      "sindrets/diffview.nvim",
+    },
+  },
 }

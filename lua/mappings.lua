@@ -226,6 +226,20 @@ local mappings = {
       :with_expr()
       :with_desc("Prev git hunk"),
 
+    ["n|<leader>fg"] = map_callback(function()
+        require("telescope").extensions.advanced_git_search.search_log_content()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("[g]it log search"),
+
+    ["n|<leader>fd"] = map_callback(function()
+        require("telescope").extensions.advanced_git_search.diff_commit_file()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("[d]iff git commit file search"),
+
     -- 代码变更操作
     ["n|<leader>gs"] = map_callback(function()
         require("gitsigns").stage_hunk()
