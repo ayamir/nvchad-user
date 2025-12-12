@@ -314,6 +314,88 @@ local mappings = {
     ["n|<leader>to"] = map_cr("Neotest output-panel"):with_noremap():with_silent():with_desc("Toggle test output"),
   },
 
+  -- 插件映射：调试功能（来自 nvimdots，做了少量适配）
+  plugin_debug = {
+    ["n|<F6>"] = map_callback(function()
+        require("dap").continue()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug: Run/Continue"),
+    ["n|<F7>"] = map_callback(function()
+        require("dap").terminate()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug: Stop"),
+    ["n|<F8>"] = map_callback(function()
+        require("dap").toggle_breakpoint()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug: Toggle breakpoint"),
+    ["n|<F9>"] = map_callback(function()
+        require("dap").step_into()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug: Step into"),
+    ["n|<F10>"] = map_callback(function()
+        require("dap").step_out()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug: Step out"),
+    ["n|<F11>"] = map_callback(function()
+        require("dap").step_over()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug: Step over"),
+    ["n|<F12>"] = map_callback(function()
+        require("dap").step_over()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug: Step over (next line)"),
+    ["n|<leader>db"] = map_callback(function()
+        require("dap").set_breakpoint(vim.fn.input("Breakpoint condition: "))
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug: Conditional breakpoint"),
+    ["n|<leader>dc"] = map_callback(function()
+        require("dap").run_to_cursor()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug: Run to cursor"),
+    ["n|<leader>dl"] = map_callback(function()
+        require("dap").run_last()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug: Run last"),
+    ["n|<leader>do"] = map_callback(function()
+        require("dap").repl.open()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug: Open REPL"),
+    ["n|<leader>du"] = map_callback(function()
+        require("dapui").close()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug: Close DAP UI"),
+    ["n|<leader>de"] = map_callback(function()
+        require("dapui").eval()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Debug: Evaluate expression"),
+  },
+
   -- 插件映射：书签功能
   plugin_bookmarks = {
     ["n|mx"] = map_cr("BookmarksMark"):with_noremap():with_silent():with_desc("Add bookmark"),

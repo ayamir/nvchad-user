@@ -182,6 +182,23 @@ function autocmd.load_autocmds()
       { "FileType", "markdown", "setlocal wrap" },
       { "FileType", "dap-repl", "lua require('dap.ext.autocompl').attach()" },
     },
+    dap_cleanup = {
+      {
+        "VimLeavePre",
+        "*",
+        [[lua pcall(function()
+          local ok_dapui, dapui = pcall(require, "dapui")
+          if ok_dapui then
+            pcall(dapui.close)
+          end
+          local ok_dap, dap = pcall(require, "dap")
+          if ok_dap then
+            pcall(dap.close)
+            pcall(dap.terminate)
+          end
+        end)]],
+      },
+    },
     yank = {
       {
         "TextYankPost",

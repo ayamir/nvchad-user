@@ -381,6 +381,30 @@ return {
   },
 
   {
+    "mfussenegger/nvim-dap",
+    lazy = true,
+    cmd = {
+      "DapSetLogLevel",
+      "DapShowLog",
+      "DapContinue",
+      "DapToggleBreakpoint",
+      "DapToggleRepl",
+      "DapStepOver",
+      "DapStepInto",
+      "DapStepOut",
+      "DapTerminate",
+    },
+    config = require("configs.dap"),
+    dependencies = {
+      "jay-babu/mason-nvim-dap.nvim",
+      {
+        "rcarriga/nvim-dap-ui",
+        dependencies = "nvim-neotest/nvim-nio",
+      },
+    },
+  },
+
+  {
     "echasnovski/mini.cursorword",
     lazy = true,
     event = { "BufReadPost", "BufAdd", "BufNewFile" },
