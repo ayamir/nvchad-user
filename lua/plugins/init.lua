@@ -612,7 +612,11 @@ return {
       require("telescope").load_extension("advanced_git_search")
     end,
     dependencies = {
-      "sindrets/diffview.nvim",
+      {
+        "sindrets/diffview.nvim",
+        cmd = { "DiffviewOpen", "DiffviewClose" },
+        config = require("configs.diffview"),
+      },
     },
   },
 }

@@ -233,12 +233,16 @@ local mappings = {
       :with_silent()
       :with_desc("[g]it log search"),
 
-    ["n|<leader>fd"] = map_callback(function()
+    ["nv|<leader>fd"] = map_callback(function()
         require("telescope").extensions.advanced_git_search.diff_commit_file()
       end)
       :with_noremap()
       :with_silent()
       :with_desc("[d]iff git commit file search"),
+
+    ["n|<leader>gf"] = map_cr("DiffviewFileHistory"):with_noremap():with_silent():with_desc("Diffview file history"),
+    ["n|<leader>gd"] = map_cr("DiffviewOpen"):with_noremap():with_silent():with_desc("Diffview open"),
+    ["n|<leader>gD"] = map_cr("DiffviewClose"):with_noremap():with_silent():with_desc("Diffview close"),
 
     -- 代码变更操作
     ["n|<leader>gs"] = map_callback(function()
@@ -438,7 +442,7 @@ local mappings = {
   },
 
   -- 其他功能映射
-  other = {
+  plugin_lsputils = {
     ["n|<leader>e"] = map_cr("e"):with_noremap():with_silent():with_desc("Refresh LSP symbols"),
     -- 切换保存时自动格式化
     ["n|<A-f>"] = map_cr("FormatToggle"):with_noremap():with_silent():with_desc("Toggle format on save"),
