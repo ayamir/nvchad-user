@@ -28,6 +28,9 @@ require("lazy").setup({
 -- load theme
 dofile(vim.g.base46_cache .. "defaults")
 dofile(vim.g.base46_cache .. "statusline")
+for _, value in ipairs(require("chadrc")["base46"]["integrations"]) do
+  dofile(vim.g.base46_cache .. value)
+end
 
 require("options")
 require("autocmds")
