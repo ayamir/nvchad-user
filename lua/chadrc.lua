@@ -40,6 +40,7 @@ M.base46 = {
 
   integrations = {
     "hop",
+    "bookmarks",
     "treesitter",
     "dap",
     "cmp",

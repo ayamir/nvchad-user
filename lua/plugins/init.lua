@@ -356,7 +356,7 @@ return {
     },
     config = function()
       require("bookmarks").setup({})
-
+      pcall(dofile, vim.g.base46_cache .. "bookmarks")
       vim.api.nvim_create_autocmd({ "VimEnter", "BufEnter" }, {
         group = vim.api.nvim_create_augroup("BookmarksGroup", {}),
         pattern = { "*" },
