@@ -53,7 +53,7 @@ M.base46 = {
     "lspsaga",
     "whichkey",
     "trouble",
-    "rainbowdelimiters",
+    -- "rainbowdelimiters",
     "git",
     "devicons",
     "todo",
