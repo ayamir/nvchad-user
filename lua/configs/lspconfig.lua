@@ -72,7 +72,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 vim.lsp.config("*", { capabilities = capabilities, on_init = on_init })
 
-local servers = { "gopls", "jsonls", "zuban", "bashls" }
+local servers = { "gopls", "jsonls", "zuban", "bashls", "buf_ls" }
 vim.lsp.enable(servers)
 vim.lsp.config("gopls", {
   cmd = { "gopls", "-remote.debug=:0", "-remote=auto" },

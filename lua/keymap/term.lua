@@ -2,7 +2,7 @@ local M = {}
 
 local Terminal = require("toggleterm.terminal").Terminal
 
-local names = { "main", "lazygit", "coco" }
+local names = { "coco", "lazygit", "main" }
 
 local terms = {}
 for i = 1, 3 do
