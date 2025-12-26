@@ -4,6 +4,9 @@ local Terminal = require("toggleterm.terminal").Terminal
 
 local names = { "coco", "lazygit", "main" }
 
+-- 记录“上一次活跃的 term”，用于 toggle 关闭/再次打开时恢复
+local last_active = 1
+
 local terms = {}
 for i = 1, 3 do
   terms[i] = Terminal:new({
@@ -20,13 +23,33 @@ vim.api.nvim_create_autocmd("TermOpen", {
     if term then
       vim.opt_local.winbar = "  " .. term.name
     end
-    -- 确保进入 terminal 模式
-    vim.cmd("startinsert")
+
+    if vim.b.toggle_number then
+      last_active = vim.b.toggle_number
+    end
   end,
 })
 
-M.activate_term = function(term)
+local function open_or_focus(term)
+  -- 优先使用 open：不会在已打开时误关掉
+  if type(term.open) == "function" then
+    term:open()
+    return
+  end
+
+  -- 兼容旧版本：没有 open 方法时退化为 toggle
+  if term.is_open and term:is_open() then
+    return
+  end
   term:toggle()
+end
+
+M.activate_term = function(term)
+  if term and term.id then
+    last_active = term.id
+  end
+
+  open_or_focus(term)
   vim.schedule(function()
     vim.cmd("startinsert!")
   end)
@@ -44,18 +67,22 @@ end
 -- Toggle 全部
 M.toggle_all_terms = function()
   if M.any_term_open() then
+    -- 记录关闭前所在的 term（如果当前就在 toggleterm 里）
+    if vim.b.toggle_number then
+      last_active = vim.b.toggle_number
+    end
     for _, t in ipairs(terms) do
       t:close()
     end
   else
-    for _, t in ipairs(terms) do
-      M.activate_term(t)
-    end
+    -- 重新打开时：只打开上次活跃的那个 term，其他 term 按需再打开（切换时会自动打开）
+    local target = terms[last_active] or terms[1]
+    M.activate_term(target)
   end
 end
 
 M.move_term = function(delta)
-  local current = vim.b.toggle_number or 1
+  local current = vim.b.toggle_number or last_active or 1
   local next = ((current + delta - 1) % 3) + 1
   M.activate_term(terms[next])
 end

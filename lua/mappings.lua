@@ -87,12 +87,12 @@ local mappings = {
       :with_noremap()
       :with_silent()
       :with_desc("Toggle floating term"),
-    ["t|<C-j>"] = map_callback(function()
+    ["t|<C-i>"] = map_callback(function()
         term.move_term(1)
       end)
       :with_noremap()
       :with_silent(),
-    ["t|<C-k>"] = map_callback(function()
+    ["t|<C-o>"] = map_callback(function()
         term.move_term(-1)
       end)
       :with_noremap()
