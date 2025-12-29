@@ -100,6 +100,21 @@ return {
   },
 
   {
+    "nvim-telescope/telescope.nvim",
+    config = function()
+      require("telescope").setup({
+        ["ui-select"] = {
+          require("telescope.themes").get_dropdown({}),
+        },
+      })
+      require("telescope").load_extension("ui-select")
+    end,
+    dependencies = {
+      "nvim-telescope/telescope-ui-select.nvim",
+    },
+  },
+
+  {
     "nvim-tree/nvim-tree.lua",
     opts = {
       on_attach = function(bufnr)

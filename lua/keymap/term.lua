@@ -12,30 +12,58 @@ local last_active = 1
 
 local terms = {}
 for i = 1, 3 do
-  -- 使用项目名 + 终端名 + PID 保证不同 nvim 实例间的 tmux 会话隔离
-  -- 替换掉 tmux 不喜欢的字符（如点号）
-  local session_name = string.format("%s_%s_%d", project_name, names[i], pid):gsub("%.", "_")
+  local term_name = names[i]
+  local default_session_name = string.format("%s_%s_%d", project_name, term_name, pid):gsub("%.", "_")
+  local default_cmd = string.format("tmux new -As %s -c %s", default_session_name, vim.fn.shellescape(project_root))
+
   terms[i] = Terminal:new({
     id = i,
     direction = "float",
-    name = names[i],
-    -- -A: 如果会话已存在则 attach，否则新建
-    -- -s: 指定会话名称
-    -- -c: 指定启动目录
-    cmd = string.format("tmux new -As %s -c %s", session_name, vim.fn.shellescape(project_root)),
+    name = term_name,
+    cmd = default_cmd,
     on_open = function(term)
       last_active = term.id
-      vim.opt_local.winbar = "  " .. names[i]
+      vim.opt_local.winbar = "  " .. term_name
+
+      -- 动态确定当前使用的 session_name
+      local current_session = default_session_name
+      if term.cmd:find("tmux attach -t") then
+        current_session = term.cmd:match("tmux attach %-t%s+([^%s]+)")
+      end
 
       vim.defer_fn(function()
         if term.job_id then
-          vim.fn.system(string.format("tmux set-option -t %s status off", session_name))
-          vim.fn.system(string.format("tmux refresh-client -t %s", session_name))
+          vim.fn.system(string.format("tmux set-option -t %s status off", current_session))
+          vim.fn.system(string.format("tmux refresh-client -t %s", current_session))
           vim.cmd("startinsert!")
         end
       end, 50)
     end,
+    on_exit = function(term)
+      -- 退出后重置为默认命令
+      term.cmd = default_cmd
+    end,
   })
+end
+
+local function get_sessions(term_name)
+  local prefix = string.format("%s_%s_", project_name, term_name):gsub("%.", "_")
+  local lines = vim.fn.systemlist("tmux list-sessions -F '#{session_name} #{session_attached}' 2>/dev/null")
+  if vim.v.shell_error ~= 0 then
+    return {}
+  end
+
+  local sessions = {}
+  for _, line in ipairs(lines) do
+    local name, attached = line:match("^([^%s]+)%s+(%d+)")
+    if name and name:find("^" .. prefix) then
+      table.insert(sessions, {
+        name = name,
+        attached = tonumber(attached) > 0,
+      })
+    end
+  end
+  return sessions
 end
 
 local function open_or_focus(term)
@@ -53,6 +81,44 @@ local function open_or_focus(term)
 end
 
 M.activate_term = function(term)
+  if not term.job_id then
+    local sessions = get_sessions(term.name)
+    local idle_sessions = {}
+    for _, s in ipairs(sessions) do
+      if not s.attached then
+        table.insert(idle_sessions, s)
+      end
+    end
+
+    if #idle_sessions == 1 then
+      -- 只有一个空闲会话，自动重连
+      term.cmd = string.format("tmux attach -t %s", idle_sessions[1].name)
+      open_or_focus(term)
+      return
+    elseif #sessions > 0 then
+      -- 有多个会话（或虽有会话但都在使用中），提供选择
+      local options = { "New Session" }
+      local session_map = {}
+      for _, s in ipairs(sessions) do
+        local label = s.name .. (s.attached and " (active)" or " (idle)")
+        table.insert(options, label)
+        session_map[label] = s.name
+      end
+
+      vim.ui.select(options, {
+        prompt = string.format("Select tmux session for [%s]:", term.name),
+      }, function(choice)
+        if not choice then
+          return
+        end
+        if choice ~= "New Session" then
+          term.cmd = string.format("tmux attach -t %s", session_map[choice])
+        end
+        open_or_focus(term)
+      end)
+      return
+    end
+  end
   open_or_focus(term)
 end
 
