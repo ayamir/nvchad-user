@@ -13,6 +13,7 @@ for i = 1, 3 do
     id = i,
     direction = "float",
     name = names[i],
+    cmd = "tmux new -As " .. names[i],
   })
 end
 
