@@ -25,11 +25,8 @@ for i = 1, 3 do
     cmd = string.format("tmux new -As %s -c %s", session_name, vim.fn.shellescape(project_root)),
     on_open = function(term)
       last_active = term.id
-      vim.opt_local.winbar = "  " .. term.name
+      vim.opt_local.winbar = "  " .. names[i]
 
-      -- 修复 tmux 视图偏移/畸变问题
-      -- 1. 强制关闭 tmux 的状态栏，减少行数干扰
-      -- 2. 强制刷新客户端以适应当前窗口大小
       vim.defer_fn(function()
         if term.job_id then
           vim.fn.system(string.format("tmux set-option -t %s status off", session_name))
