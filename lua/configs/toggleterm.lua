@@ -11,8 +11,12 @@ return function()
     close_on_exit = true,
     float_opts = {
       border = "rounded",
-      width = math.floor(vim.o.columns * 0.75),
-      height = math.floor(vim.o.lines * 0.7),
+      width = function()
+        return math.floor(vim.o.columns * 0.75)
+      end,
+      height = function()
+        return math.floor(vim.o.lines * 0.7)
+      end,
       winblend = 15,
     },
     shade_terminals = false,
