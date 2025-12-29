@@ -1,5 +1,8 @@
 require("nvchad.mappings")
 
+vim.keymap.del({ "n" }, "<Tab>")
+vim.keymap.del({ "n" }, "<S-Tab>")
+
 local bind = require("keymap.bind")
 local term = require("keymap.term")
 local map_cr = bind.map_cr
@@ -87,12 +90,12 @@ local mappings = {
       :with_noremap()
       :with_silent()
       :with_desc("Toggle floating term"),
-    ["t|<C-i>"] = map_callback(function()
+    ["t|<A-i>"] = map_callback(function()
         term.move_term(1)
       end)
       :with_noremap()
       :with_silent(),
-    ["t|<C-o>"] = map_callback(function()
+    ["t|<A-o>"] = map_callback(function()
         term.move_term(-1)
       end)
       :with_noremap()
