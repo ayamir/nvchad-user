@@ -25,23 +25,34 @@ for i = 1, 3 do
       last_active = term.id
       vim.opt_local.winbar = "  " .. term_name
 
-      -- 动态确定当前使用的 session_name
-      local current_session = default_session_name
-      if term.cmd:find("tmux attach -t") then
-        current_session = term.cmd:match("tmux attach %-t%s+([^%s]+)")
+      local function refresh()
+        if term.job_id then
+          -- 动态确定当前使用的 session_name
+          local current_session = term.current_session or default_session_name
+          if not term.current_session and term.cmd:find("tmux attach -t") then
+            current_session = term.cmd:match("tmux attach %-t%s+([^%s]+)")
+          end
+
+          vim.fn.system(string.format("tmux set-option -t %s status off", current_session))
+          vim.fn.system(string.format("tmux refresh-client -t %s", current_session))
+          vim.cmd("redraw!")
+        end
       end
+
+      -- 延迟多次刷新，确保在浮窗大小稳定后 tmux 能正确对齐
+      vim.defer_fn(refresh, 50)
+      vim.defer_fn(refresh, 200)
 
       vim.defer_fn(function()
         if term.job_id then
-          vim.fn.system(string.format("tmux set-option -t %s status off", current_session))
-          vim.fn.system(string.format("tmux refresh-client -t %s", current_session))
           vim.cmd("startinsert!")
         end
-      end, 50)
+      end, 100)
     end,
     on_exit = function(term)
-      -- 退出后重置为默认命令
+      -- 退出后重置状态
       term.cmd = default_cmd
+      term.current_session = nil
     end,
   })
 end
@@ -90,33 +101,40 @@ M.activate_term = function(term)
       end
     end
 
-    if #idle_sessions == 1 then
-      -- 只有一个空闲会话，自动重连
-      term.cmd = string.format("tmux attach -t %s", idle_sessions[1].name)
-      open_or_focus(term)
-      return
-    elseif #sessions > 0 then
-      -- 有多个会话（或虽有会话但都在使用中），提供选择
-      local options = { "New Session" }
-      local session_map = {}
-      for _, s in ipairs(sessions) do
-        local label = s.name .. (s.attached and " (active)" or " (idle)")
-        table.insert(options, label)
-        session_map[label] = s.name
-      end
+    if #sessions > 0 then
+      -- 如果是 coco，或者有多个会话，或者唯一的会话已被占用，则弹出选择菜单
+      if term.name == "coco" or #sessions > 1 or (#sessions == 1 and sessions[1].attached) then
+        local options = { "New Session" }
+        local session_map = {}
+        for _, s in ipairs(sessions) do
+          local label = s.name .. (s.attached and " (active)" or " (idle)")
+          table.insert(options, label)
+          session_map[label] = s.name
+        end
 
-      vim.ui.select(options, {
-        prompt = string.format("Select tmux session for [%s]:", term.name),
-      }, function(choice)
-        if not choice then
-          return
-        end
-        if choice ~= "New Session" then
-          term.cmd = string.format("tmux attach -t %s", session_map[choice])
-        end
+        vim.ui.select(options, {
+          prompt = string.format("Select tmux session for [%s]:", term.name),
+        }, function(choice)
+          if not choice then
+            return
+          end
+          if choice ~= "New Session" then
+            term.cmd = string.format("tmux attach -t %s", session_map[choice])
+            term.current_session = session_map[choice]
+          else
+            term.current_session = nil -- 使用默认 session
+          end
+          open_or_focus(term)
+        end)
+        return
+      elseif #idle_sessions == 1 then
+        -- 只有一个空闲会话且不是 coco，自动重连
+        local session_name = idle_sessions[1].name
+        term.cmd = string.format("tmux attach -t %s", session_name)
+        term.current_session = session_name
         open_or_focus(term)
-      end)
-      return
+        return
+      end
     end
   end
   open_or_focus(term)

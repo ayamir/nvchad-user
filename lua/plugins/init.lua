@@ -104,7 +104,14 @@ return {
     config = function()
       require("telescope").setup({
         ["ui-select"] = {
-          require("telescope.themes").get_dropdown({}),
+          require("telescope.themes").get_dropdown({
+            previewer = true,
+            sorting_strategy = "ascending",
+            layout_config = {
+              width = 0.45,
+              height = 0.35,
+            },
+          }),
         },
       })
       require("telescope").load_extension("ui-select")
