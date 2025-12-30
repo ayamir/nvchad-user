@@ -100,6 +100,20 @@ return {
   },
 
   {
+    "nvim-telescope/telescope.nvim",
+    opts = {
+      defaults = {
+        sorting_strategy = "descending",
+        layout_config = {
+          horizontal = {
+            prompt_position = "bottom",
+          },
+        },
+      },
+    },
+  },
+
+  {
     "nvim-tree/nvim-tree.lua",
     opts = {
       on_attach = function(bufnr)
