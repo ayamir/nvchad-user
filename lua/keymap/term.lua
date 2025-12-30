@@ -91,7 +91,107 @@ local function open_or_focus(term)
   term:toggle()
 end
 
+local function select_session_with_telescope(term)
+  local sessions = get_sessions(term.name)
+  local options = { "New Session" }
+  local session_map = {}
+  for _, s in ipairs(sessions) do
+    local label = s.name .. (s.attached and " (active)" or " (idle)")
+    table.insert(options, label)
+    session_map[label] = s.name
+  end
+
+  local pickers = require("telescope.pickers")
+  local finders = require("telescope.finders")
+  local conf = require("telescope.config").values
+  local actions = require("telescope.actions")
+  local action_state = require("telescope.actions.state")
+  local previewers = require("telescope.previewers")
+
+  pickers
+    .new({
+      layout_strategy = "vertical",
+      layout_config = {
+        width = 0.8,
+        height = 0.9,
+        preview_height = 0.85,
+        prompt_position = "top",
+      },
+      sorting_strategy = "ascending",
+    }, {
+      prompt_title = string.format("Select tmux session for [%s]", term.name),
+      finder = finders.new_table({
+        results = options,
+      }),
+      sorter = conf.generic_sorter({}),
+      previewer = previewers.new_termopen_previewer({
+        get_command = function(entry)
+          local choice = entry[1]
+          if choice == "New Session" then
+            return { "echo", "Create a new tmux session" }
+          end
+          local session_name = session_map[choice]
+          -- 使用 tmux capture-pane 捕获内容并直接通过 termopen 显示
+          -- -e 支持颜色，-p 输出到 stdout
+          return { "tmux", "capture-pane", "-e", "-p", "-t", session_name }
+        end,
+      }),
+      attach_mappings = function(prompt_bufnr, map)
+        actions.select_default:replace(function()
+          actions.close(prompt_bufnr)
+          local selection = action_state.get_selected_entry()
+          if not selection then
+            return
+          end
+          local choice = selection[1]
+          if choice ~= "New Session" then
+            term.cmd = string.format("tmux attach -t %s", session_map[choice])
+            term.current_session = session_map[choice]
+          else
+            term.current_session = nil
+          end
+          open_or_focus(term)
+        end)
+
+        map("i", "<C-d>", function()
+          local selection = action_state.get_selected_entry()
+          if not selection then
+            return
+          end
+          local choice = selection[1]
+          if choice ~= "New Session" then
+            local session_name = session_map[choice]
+            vim.fn.system(string.format("tmux kill-session -t %s", session_name))
+            actions.close(prompt_bufnr)
+            -- 重新打开选择器以刷新列表
+            select_session_with_telescope(term)
+          else
+            vim.notify("Cannot delete 'New Session' option", vim.log.levels.WARN)
+          end
+        end)
+
+        -- 允许在选择器开启时通过 <A-j>/<A-k> 切换终端
+        map({ "i", "n" }, "<A-j>", function()
+          actions.close(prompt_bufnr)
+          vim.schedule(function()
+            M.move_term(1)
+          end)
+        end)
+        map({ "i", "n" }, "<A-k>", function()
+          actions.close(prompt_bufnr)
+          vim.schedule(function()
+            M.move_term(-1)
+          end)
+        end)
+
+        return true
+      end,
+    })
+    :find()
+end
+
 M.activate_term = function(term)
+  last_active = term.id
   if not term.job_id then
     local sessions = get_sessions(term.name)
     local idle_sessions = {}
@@ -104,28 +204,7 @@ M.activate_term = function(term)
     if #sessions > 0 then
       -- 如果是 coco，或者有多个会话，或者唯一的会话已被占用，则弹出选择菜单
       if term.name == "coco" or #sessions > 1 or (#sessions == 1 and sessions[1].attached) then
-        local options = { "New Session" }
-        local session_map = {}
-        for _, s in ipairs(sessions) do
-          local label = s.name .. (s.attached and " (active)" or " (idle)")
-          table.insert(options, label)
-          session_map[label] = s.name
-        end
-
-        vim.ui.select(options, {
-          prompt = string.format("Select tmux session for [%s]:", term.name),
-        }, function(choice)
-          if not choice then
-            return
-          end
-          if choice ~= "New Session" then
-            term.cmd = string.format("tmux attach -t %s", session_map[choice])
-            term.current_session = session_map[choice]
-          else
-            term.current_session = nil -- 使用默认 session
-          end
-          open_or_focus(term)
-        end)
+        select_session_with_telescope(term)
         return
       elseif #idle_sessions == 1 then
         -- 只有一个空闲会话且不是 coco，自动重连
