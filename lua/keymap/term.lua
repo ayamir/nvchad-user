@@ -184,6 +184,11 @@ local function select_session_with_telescope(term)
           end)
         end)
 
+        -- 允许在选择器开启时通过 <A-d> 直接关闭界面（取消操作）
+        map({ "i", "n" }, "<A-d>", function()
+          actions.close(prompt_bufnr)
+        end)
+
         return true
       end,
     })
