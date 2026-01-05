@@ -140,8 +140,6 @@ return {
     dependencies = {
       "mfussenegger/nvim-treehopper",
       "nvim-treesitter/nvim-treesitter-context",
-      { "andymass/vim-matchup", init = require("configs.matchup") },
-      -- { "hiphish/rainbow-delimiters.nvim", config = require("configs.rainbow_delims") },
     },
   },
 
