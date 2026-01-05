@@ -7,6 +7,9 @@ local project_root = vim.fn.getcwd()
 local project_name = vim.fn.fnamemodify(project_root, ":t")
 local pid = vim.fn.getpid()
 
+-- 清理配置：超过多少秒的会话会被认为是过期的（默认 7 天）
+local INACTIVE_THRESHOLD_SECONDS = 7 * 24 * 60 * 60
+
 -- 记录“上一次活跃的 term”，用于 toggle 关闭/再次打开时恢复
 local last_active = 1
 
@@ -59,22 +62,71 @@ end
 
 local function get_sessions(term_name)
   local prefix = string.format("%s_%s_", project_name, term_name):gsub("%.", "_")
-  local lines = vim.fn.systemlist("tmux list-sessions -F '#{session_name} #{session_attached}' 2>/dev/null")
+  local lines =
+    vim.fn.systemlist("tmux list-sessions -F '#{session_name} #{session_attached} #{session_activity}' 2>/dev/null")
   if vim.v.shell_error ~= 0 then
     return {}
   end
 
   local sessions = {}
+  local now = tonumber(vim.fn.strftime("%s"))
   for _, line in ipairs(lines) do
-    local name, attached = line:match("^([^%s]+)%s+(%d+)")
+    local name, attached, activity = line:match("^([^%s]+)%s+(%d+)%s+(%d+)")
     if name and name:find("^" .. prefix) then
       table.insert(sessions, {
         name = name,
         attached = tonumber(attached) > 0,
+        activity = tonumber(activity) or now,
       })
     end
   end
-  return sessions
+  return sessions, now
+end
+
+-- 自动清理长时间未活跃的 tmux 会话
+local function cleanup_inactive_sessions(term_name)
+  local sessions, now = get_sessions(term_name)
+  local expired_sessions = {}
+
+  for _, s in ipairs(sessions) do
+    -- 只清理未附加的会话
+    if not s.attached then
+      local inactive_seconds = now - s.activity
+      if inactive_seconds > INACTIVE_THRESHOLD_SECONDS then
+        table.insert(expired_sessions, {
+          name = s.name,
+          inactive_days = inactive_seconds / 86400,
+        })
+      end
+    end
+  end
+
+  if #expired_sessions == 0 then
+    return 0
+  end
+
+  -- 构建确认消息
+  local msg_lines = { "以下 tmux 会话已过期（超过 7 天未活跃）：", "" }
+  for _, s in ipairs(expired_sessions) do
+    table.insert(msg_lines, string.format("  - %s (已空闲 %.1f 天)", s.name, s.inactive_days))
+  end
+  table.insert(msg_lines, "")
+  table.insert(msg_lines, "是否清理这些会话？")
+
+  local choice = vim.fn.confirm(table.concat(msg_lines, "\n"), "&Yes\n&No", 2)
+  if choice ~= 1 then
+    return 0
+  end
+
+  -- 执行清理
+  local cleaned_count = 0
+  for _, s in ipairs(expired_sessions) do
+    vim.fn.system(string.format("tmux kill-session -t %s", s.name))
+    cleaned_count = cleaned_count + 1
+    vim.notify(string.format("已清理: %s", s.name), vim.log.levels.INFO)
+  end
+
+  return cleaned_count
 end
 
 local function open_or_focus(term)
@@ -198,6 +250,9 @@ end
 M.activate_term = function(term)
   last_active = term.id
   if not term.job_id then
+    -- 在查找会话前先清理过期会话
+    cleanup_inactive_sessions(term.name)
+
     local sessions = get_sessions(term.name)
     local idle_sessions = {}
     for _, s in ipairs(sessions) do
@@ -222,6 +277,55 @@ M.activate_term = function(term)
     end
   end
   open_or_focus(term)
+end
+
+-- 手动清理过期会话的公开接口
+M.cleanup_expired_sessions = function()
+  local all_expired = {}
+  local now = tonumber(vim.fn.strftime("%s"))
+
+  -- 先收集所有类型的过期会话
+  for _, term_name in ipairs(names) do
+    local sessions = get_sessions(term_name)
+    for _, s in ipairs(sessions) do
+      if not s.attached then
+        local inactive_seconds = now - s.activity
+        if inactive_seconds > INACTIVE_THRESHOLD_SECONDS then
+          table.insert(all_expired, {
+            name = s.name,
+            inactive_days = inactive_seconds / 86400,
+            term_name = term_name,
+          })
+        end
+      end
+    end
+  end
+
+  if #all_expired == 0 then
+    vim.notify("没有需要清理的过期 tmux 会话", vim.log.levels.INFO)
+    return
+  end
+
+  -- 构建确认消息
+  local msg_lines = { "以下 tmux 会话已过期（超过 7 天未活跃）：", "" }
+  for _, s in ipairs(all_expired) do
+    table.insert(msg_lines, string.format("  [%s] %s (已空闲 %.1f 天)", s.term_name, s.name, s.inactive_days))
+  end
+  table.insert(msg_lines, "")
+  table.insert(msg_lines, "是否清理这些会话？")
+
+  local choice = vim.fn.confirm(table.concat(msg_lines, "\n"), "&Yes\n&No", 2)
+  if choice ~= 1 then
+    return
+  end
+
+  -- 执行清理
+  local cleaned_count = 0
+  for _, s in ipairs(all_expired) do
+    vim.fn.system(string.format("tmux kill-session -t %s", s.name))
+    cleaned_count = cleaned_count + 1
+  end
+  vim.notify(string.format("共清理了 %d 个过期会话", cleaned_count), vim.log.levels.INFO)
 end
 
 M.any_term_open = function()
