@@ -1,8 +1,5 @@
 require("nvchad.mappings")
 
-vim.keymap.del({ "n" }, "<Tab>")
-vim.keymap.del({ "n" }, "<S-Tab>")
-
 local bind = require("keymap.bind")
 local term = require("keymap.term")
 local map_cr = bind.map_cr
