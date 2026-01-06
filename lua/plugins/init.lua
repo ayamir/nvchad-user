@@ -306,13 +306,7 @@ return {
     "Wansmer/symbol-usage.nvim",
     lazy = true,
     event = "LspAttach",
-    config = function()
-      require("symbol-usage").setup({})
-
-      vim.api.nvim_create_user_command("E", function()
-        require("symbol-usage").refresh()
-      end, {})
-    end,
+    config = require("configs.symbol-usage"),
   },
 
   {
