@@ -5,7 +5,21 @@ local Terminal = require("toggleterm.terminal").Terminal
 local names = { "coco", "lazygit", "main" }
 local project_root = vim.fn.getcwd()
 local project_name = vim.fn.fnamemodify(project_root, ":t")
-local pid = vim.fn.getpid()
+
+-- 获取当前 git 分支名（用于 session name）
+local function get_git_branch()
+  local branch = vim.fn.systemlist("git branch --show-current 2>/dev/null")
+  if vim.v.shell_error == 0 and #branch > 0 then
+    return branch[1]:gsub("[^%w_-]", "_")
+  end
+  return "main"
+end
+
+-- 根据当前分支生成 session name 前缀
+local function get_session_prefix(term_name)
+  local branch = get_git_branch()
+  return string.format("%s_%s_%s", project_name, branch, term_name)
+end
 
 -- 清理配置：超过多少秒的会话会被认为是过期的（默认 7 天）
 local INACTIVE_THRESHOLD_SECONDS = 7 * 24 * 60 * 60
@@ -16,8 +30,12 @@ local last_active = 1
 local terms = {}
 for i = 1, 3 do
   local term_name = names[i]
-  local default_session_name = string.format("%s_%s_%d", project_name, term_name, pid):gsub("%.", "_")
-  local default_cmd = string.format("tmux new -As %s -c %s", default_session_name, vim.fn.shellescape(project_root))
+  -- 使用闭包捕获初始的 session_prefix
+  local function get_initial_prefix()
+    return get_session_prefix(term_name)
+  end
+  local initial_prefix = get_initial_prefix()
+  local default_cmd = string.format("tmux new -As %s -c %s", initial_prefix, vim.fn.shellescape(project_root))
 
   terms[i] = Terminal:new({
     id = i,
@@ -31,7 +49,7 @@ for i = 1, 3 do
       local function refresh()
         if term.job_id then
           -- 动态确定当前使用的 session_name
-          local current_session = term.current_session or default_session_name
+          local current_session = term.current_session or get_initial_prefix()
           if not term.current_session and term.cmd:find("tmux attach -t") then
             current_session = term.cmd:match("tmux attach %-t%s+([^%s]+)")
           end
@@ -53,15 +71,15 @@ for i = 1, 3 do
       end, 100)
     end,
     on_exit = function(term)
-      -- 退出后重置状态
-      term.cmd = default_cmd
+      -- 退出后重置为创建新会话的命令
+      term.cmd = string.format("tmux new -As %s -c %s", get_session_prefix(term.name), vim.fn.shellescape(project_root))
       term.current_session = nil
     end,
   })
 end
 
 local function get_sessions(term_name)
-  local prefix = string.format("%s_%s_", project_name, term_name):gsub("%.", "_")
+  local project_name_escaped = project_name:gsub("%.", "_")
   local lines =
     vim.fn.systemlist("tmux list-sessions -F '#{session_name} #{session_attached} #{session_activity}' 2>/dev/null")
   if vim.v.shell_error ~= 0 then
@@ -70,14 +88,27 @@ local function get_sessions(term_name)
 
   local sessions = {}
   local now = tonumber(vim.fn.strftime("%s"))
+
   for _, line in ipairs(lines) do
     local name, attached, activity = line:match("^([^%s]+)%s+(%d+)%s+(%d+)")
-    if name and name:find("^" .. prefix) then
-      table.insert(sessions, {
-        name = name,
-        attached = tonumber(attached) > 0,
-        activity = tonumber(activity) or now,
-      })
+    if not name then
+      name, attached, activity = line:match("^([^%s]+)%s+(%d+)")
+    end
+    if name and attached then
+      -- 匹配新格式: <project>_<branch>_<type>
+      local is_new_format = name:find(string.format("^%s_", project_name_escaped))
+        and name:find(string.format("_%s$", term_name))
+
+      -- 匹配旧格式: <project>_<type>_<pid> 或 <project>_<type>_<anything>
+      local is_old_format = name:find(string.format("^%s_%s_", project_name_escaped, term_name))
+
+      if is_new_format or is_old_format then
+        table.insert(sessions, {
+          name = name,
+          attached = tonumber(attached) > 0,
+          activity = tonumber(activity) or now,
+        })
+      end
     end
   end
   return sessions, now
@@ -166,7 +197,7 @@ local function select_session_with_telescope(term)
       layout_config = {
         width = 0.8,
         height = 0.9,
-        preview_height = 0.85,
+        preview_height = 0.8,
         prompt_position = "top",
       },
       sorting_strategy = "ascending",
@@ -254,27 +285,10 @@ M.activate_term = function(term)
     cleanup_inactive_sessions(term.name)
 
     local sessions = get_sessions(term.name)
-    local idle_sessions = {}
-    for _, s in ipairs(sessions) do
-      if not s.attached then
-        table.insert(idle_sessions, s)
-      end
-    end
 
-    if #sessions > 0 then
-      -- 如果是 coco，或者有多个会话，或者唯一的会话已被占用，则弹出选择菜单
-      if term.name == "coco" or #sessions > 1 or (#sessions == 1 and sessions[1].attached) then
-        select_session_with_telescope(term)
-        return
-      elseif #idle_sessions == 1 then
-        -- 只有一个空闲会话且不是 coco，自动重连
-        local session_name = idle_sessions[1].name
-        term.cmd = string.format("tmux attach -t %s", session_name)
-        term.current_session = session_name
-        open_or_focus(term)
-        return
-      end
-    end
+    -- 总是弹出 telescope 选择会话（包括新建）
+    select_session_with_telescope(term)
+    return
   end
   open_or_focus(term)
 end
