@@ -157,6 +157,10 @@ local mappings = {
     -- 搜索结果居中
     ["n|n"] = map_cmd("nzzzv"):with_noremap():with_silent():with_desc("Next search result (center)"),
     ["n|N"] = map_cmd("Nzzzv"):with_noremap():with_silent():with_desc("Prev search result (center)"),
+
+    ["nv|<leader>i"] = map_callback(function()
+      require("nvim-toggler").toggle()
+    end),
   },
 
   -- 插件映射：快速跳转
