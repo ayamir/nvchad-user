@@ -230,6 +230,13 @@ local mappings = {
       :with_expr()
       :with_desc("Prev git hunk"),
 
+    ["n|<leader>ff"] = map_callback(function()
+        require("fff").find_files()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("FFF files"),
+
     ["n|<leader>fg"] = map_callback(function()
         require("telescope").extensions.advanced_git_search.search_log_content()
       end)
