@@ -179,6 +179,7 @@ return {
         "zz",
         "zb",
       },
+      performance_mode = true,
     },
   },
 
