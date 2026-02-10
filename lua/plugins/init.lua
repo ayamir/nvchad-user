@@ -179,7 +179,7 @@ return {
         "zz",
         "zb",
       },
-      performance_mode = true,
+      easing_function = "quadratic",
     },
   },
 
