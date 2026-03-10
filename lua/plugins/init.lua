@@ -1,5 +1,25 @@
 local cmp = require("cmp")
 
+local is_nixos = function()
+  local f = io.open("/etc/os-release", "r")
+  if f then
+    local content = f:read("*all")
+    f:close()
+    return content:match("ID=nixos") ~= nil
+  end
+  return false
+end
+
+local is_archlinux = function()
+  local f = io.open("/etc/os-release", "r")
+  if f then
+    local content = f:read("*all")
+    f:close()
+    return content:match("ID=arch") ~= nil or content:match("ID_LIKE=arch") ~= nil
+  end
+  return false
+end
+
 local find_or_create_project_bookmark_group = function()
   local project_root = require("project").get_project_root()
   if not project_root then
@@ -275,6 +295,7 @@ return {
 
   {
     "git@code.byted.org:chenjiaqi.cposture/codeverse.vim.git",
+    cond = not (is_nixos() or is_archlinux()),
     lazy = true,
     event = "InsertEnter",
     init = function()
