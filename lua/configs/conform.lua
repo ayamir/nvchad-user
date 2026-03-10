@@ -6,6 +6,7 @@ local options = {
     json = { "prettier" },
     python = { "ruff", "black", "isort" },
     sh = { "shfmt" },
+    nix = { "nixfmt" },
   },
 }
 
