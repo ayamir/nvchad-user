@@ -1,10 +1,9 @@
 return function()
   require("project").setup({
     manual_mode = false,
-    use_lsp = false,
     patterns = { "=tcc_monorepo", "go.mod", ".git" },
     silent_chdir = true,
-    ignore_lsp = { "null-ls", "copilot" },
+    lsp = { ignroe = { "null-ls", "copilot" }, enabled = false },
     exclude_dirs = {},
     show_hidden = false,
     scope_chdir = "global",

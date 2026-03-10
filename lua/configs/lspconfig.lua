@@ -195,3 +195,7 @@ vim.lsp.config("zuban", {
     ".git",
   },
 })
+
+vim.lsp.config("nil_ls", {
+  filetypes = { "nix" },
+})
