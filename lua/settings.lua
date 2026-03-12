@@ -11,6 +11,7 @@ settings["treesitter_deps"] = {
   "markdown_inline",
   "python",
   "rust",
+  "nix",
 }
 
 return settings

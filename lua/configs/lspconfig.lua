@@ -72,7 +72,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 vim.lsp.config("*", { capabilities = capabilities, on_init = on_init })
 
-local servers = { "gopls", "jsonls", "zuban", "bashls", "buf_ls", "nil_ls" }
+local servers = { "gopls", "jsonls", "zuban", "bashls", "buf_ls", "nixd" }
 vim.lsp.enable(servers)
 vim.lsp.config("gopls", {
   cmd = { "gopls", "-remote.debug=:0", "-remote=auto" },
@@ -196,6 +196,21 @@ vim.lsp.config("zuban", {
   },
 })
 
-vim.lsp.config("nil_ls", {
+vim.lsp.config("nixd", {
   filetypes = { "nix" },
+  settings = {
+    nixd = {
+      nixpkgs = {
+        expr = 'import (builtins.getFlake "/etc/nixos").inputs.nixpkgs {}',
+      },
+      options = {
+        nixos = {
+          expr = '(builtins.getFlake "/etc/nixos").nixosConfigurations.nixos.options',
+        },
+        home_manager = {
+          expr = '(builtins.getFlake "/etc/nixos").homeConfigurations.ayamir.options',
+        },
+      },
+    },
+  },
 })
