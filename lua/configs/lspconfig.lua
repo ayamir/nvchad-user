@@ -201,14 +201,14 @@ vim.lsp.config("nixd", {
   settings = {
     nixd = {
       nixpkgs = {
-        expr = 'import (builtins.getFlake "/etc/nixos").inputs.nixpkgs {}',
+        expr = 'import (builtins.getFlake "path:/etc/nixos").inputs.nixpkgs { system = "x86_64-linux"; }',
       },
       options = {
         nixos = {
-          expr = '(builtins.getFlake "/etc/nixos").nixosConfigurations.nixos.options',
+          expr = '(builtins.getFlake "path:/etc/nixos").nixosConfigurations.nixos.options',
         },
         home_manager = {
-          expr = '(builtins.getFlake "/etc/nixos").homeConfigurations.ayamir.options',
+          expr = '(builtins.getFlake "path:/etc/nixos").homeConfigurations.ayamir.options',
         },
       },
     },
