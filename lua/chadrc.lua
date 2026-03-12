@@ -44,7 +44,6 @@ M.base46 = {
     "bookmarks",
     "treesitter",
     "dap",
-    "cmp",
     "blankline",
     "edgy",
     "grug_far",

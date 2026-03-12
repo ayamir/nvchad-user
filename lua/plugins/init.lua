@@ -1,5 +1,3 @@
-local cmp = require("cmp")
-
 local is_nixos = function()
   local f = io.open("/etc/os-release", "r")
   if f then
@@ -63,58 +61,14 @@ return {
     end,
   },
 
+  { import = "nvchad.blink.lazyspec" },
+
   {
-    "hrsh7th/nvim-cmp",
-    init = function()
-      vim.g.trae_disable_autocompletion = true
-      vim.g.trae_no_map_tab = true
-      vim.g.trae_disable_bindings = true
-    end,
+    "saghen/blink.cmp",
     opts = {
-      sources = {
-        { name = "trae" },
-        { name = "nvim_lsp" },
-        { name = "luasnip" },
-        { name = "buffer" },
-        { name = "nvim_lua" },
-        { name = "async_path" },
-      },
-      matching = {
-        disallow_partial_fuzzy_matching = false,
-      },
-      performance = {
-        async_budget = 1,
-        max_view_entries = 120,
-      },
-      mapping = cmp.mapping.preset.insert({
-        ["<C-p>"] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
-        ["<C-n>"] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
-        ["<C-d>"] = cmp.mapping.scroll_docs(-4),
-        ["<C-f>"] = cmp.mapping.scroll_docs(4),
-        ["<C-w>"] = cmp.mapping.abort(),
-        ["<Tab>"] = cmp.mapping(function(fallback)
-          if cmp.visible() then
-            cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-          elseif require("luasnip").expand_or_locally_jumpable() then
-            require("luasnip").expand_or_jump()
-          else
-            fallback()
-          end
-        end, { "i", "s" }),
-        ["<S-Tab>"] = cmp.mapping(function(fallback)
-          if cmp.visible() then
-            cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
-          elseif require("luasnip").jumpable(-1) then
-            require("luasnip").jump(-1)
-          else
-            fallback()
-          end
-        end, { "i", "s" }),
-      }),
-      snippet = {
-        expand = function(args)
-          require("luasnip").lsp_expand(args.body)
-        end,
+      completion = {
+        list = { max_items = 120 },
+        documentation = { auto_show = true },
       },
     },
   },
