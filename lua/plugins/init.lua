@@ -320,6 +320,7 @@ return {
       require("garbage-day").setup({
         excluded_lsp_clients = { "null-ls" },
         notifications = true,
+        grace_period = 5 * 60,
       })
     end,
   },
