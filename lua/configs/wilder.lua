@@ -53,11 +53,12 @@ return function()
   wilder.set_option(
     "renderer",
     wilder.renderer_mux({
-      [":"] = popupmenu_renderer,
+      -- [":"] = popupmenu_renderer,
       ["/"] = wildmenu_renderer,
       substitute = wildmenu_renderer,
     })
   )
 
-  require("wilder").setup({ modes = { ":", "/", "?" } })
+  -- require("wilder").setup({ modes = { ":", "/", "?" } })
+  require("wilder").setup({ modes = { "/", "?" } })
 end
