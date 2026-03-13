@@ -45,11 +45,7 @@ for i = 1, 3 do
     on_open = function(term)
       last_active = term.id
       vim.opt_local.winbar = "  " .. term_name
-
-      -- 设置浮窗背景透明
       vim.api.nvim_set_option_value("winblend", 0, { scope = "local" })
-      vim.cmd("hi NormalFloat guibg=NONE")
-      vim.cmd("hi FloatBorder guibg=NONE")
 
       local function refresh()
         if term.job_id then
