@@ -65,12 +65,68 @@ return {
 
   {
     "saghen/blink.cmp",
-    opts = {
-      completion = {
-        ghost_text = { enabled = true },
-        list = { max_items = 120 },
+    dependencies = {
+      {
+        "saghen/blink.compat",
+        version = "v2.*", -- blink.cmp v1.* 对应 blink.compat v2.*
+        opts = {}, -- 需要让 lazy.nvim 调用 blink.compat 的 setup
+      },
+      {
+        "git@code.byted.org:chenjiaqi.cposture/codeverse.vim.git",
+        cond = not (is_nixos() or is_archlinux()),
+        lazy = true,
+        event = "InsertEnter",
+        init = function()
+          vim.g.trae_disable_autocompletion = true
+          vim.g.trae_no_map_tab = true
+          vim.g.trae_disable_bindings = true
+        end,
+        config = function()
+          vim.g.trae_disable_autocompletion = true
+          vim.g.trae_no_map_tab = true
+          vim.g.trae_disable_bindings = true
+          require("trae").setup()
+        end,
       },
     },
+    opts = function(_, opts)
+      opts = opts or {}
+
+      -- 使用 NvChad 设定的 completion.menu 样式（kind_icon / label / kind），不改 columns。
+      -- 参考：/Users/bytedance/.local/share/nvim/lazy/nvchad-ui/lua/nvchad/blink/config.lua
+      opts.completion = opts.completion or {}
+      opts.completion.ghost_text = { enabled = true }
+      opts.completion.list = { max_items = 120 }
+      local menu = vim.deepcopy(require("nvchad.blink").menu)
+      menu.draw = menu.draw or {}
+      menu.draw.components = menu.draw.components or {}
+      menu.draw.components.kind = menu.draw.components.kind or {}
+      -- NvChad 的 menu 右侧列是 `kind`，默认会显示 `Property` 等类型。
+      -- 对 trae 来源，将其替换为 `Trae`，这样无需增加 source_name 列也能区分。
+      menu.draw.components.kind.text = function(ctx)
+        if ctx.source_id == "trae" then
+          return "Trae"
+        end
+        return ctx.kind
+      end
+      opts.completion.menu = menu
+
+      -- Sources
+      opts.sources = opts.sources or {}
+      opts.sources.default = opts.sources.default or { "lsp", "buffer", "snippets", "path" }
+      if not vim.tbl_contains(opts.sources.default, "trae") then
+        table.insert(opts.sources.default, 1, "trae")
+      end
+
+      opts.sources.providers = opts.sources.providers or {}
+      opts.sources.providers.trae = {
+        name = "Trae",
+        module = "blink.compat.source",
+        opts = { cmp_name = "trae" },
+      }
+
+      return opts
+    end,
   },
 
   {
