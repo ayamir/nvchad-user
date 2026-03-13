@@ -234,7 +234,7 @@ local mappings = {
       :with_expr()
       :with_desc("Prev git hunk"),
 
-    ["n|<leader>ff"] = map_callback(function()
+    ["n|ff"] = map_callback(function()
         require("fff").find_files()
       end)
       :with_noremap()
