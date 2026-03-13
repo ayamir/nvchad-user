@@ -1,50 +1,4 @@
-local is_nixos = function()
-  local f = io.open("/etc/os-release", "r")
-  if f then
-    local content = f:read("*all")
-    f:close()
-    return content:match("ID=nixos") ~= nil
-  end
-  return false
-end
-
-local is_archlinux = function()
-  local f = io.open("/etc/os-release", "r")
-  if f then
-    local content = f:read("*all")
-    f:close()
-    return content:match("ID=arch") ~= nil or content:match("ID_LIKE=arch") ~= nil
-  end
-  return false
-end
-
-local find_or_create_project_bookmark_group = function()
-  local project_root = require("project").get_project_root()
-  if not project_root then
-    return
-  end
-
-  local project_name = project_root
-    :gsub("^" .. vim.pesc(os.getenv("HOME")) .. "/", "")
-    :gsub("^/data00/home/[^/]+/", "")
-    :gsub("^/[^/]+/[^/]+/", "")
-  local Service = require("bookmarks.domain.service")
-  local Repo = require("bookmarks.domain.repo")
-  local bookmark_list = nil
-
-  for _, bl in ipairs(Repo.find_lists()) do
-    if bl.name == project_name then
-      bookmark_list = bl
-      break
-    end
-  end
-
-  if not bookmark_list then
-    bookmark_list = Service.create_list(project_name)
-  end
-  Service.set_active_list(bookmark_list.id)
-  require("bookmarks.sign").safe_refresh_signs()
-end
+local helpers = require("utils.helpers")
 
 return {
   {
@@ -73,7 +27,7 @@ return {
       },
       {
         "git@code.byted.org:chenjiaqi.cposture/codeverse.vim.git",
-        cond = not (is_nixos() or is_archlinux()),
+        cond = not (helpers.is_nixos() or helpers.is_archlinux()),
         lazy = true,
         event = "InsertEnter",
         init = function()
@@ -127,42 +81,6 @@ return {
 
       return opts
     end,
-  },
-
-  {
-    "saghen/blink.pairs",
-    version = "*", -- (recommended) only required with prebuilt binaries
-    dependencies = "saghen/blink.download",
-    opts = {
-      mappings = {
-        enabled = true,
-        cmdline = true,
-        disabled_filetypes = {},
-        pairs = {},
-      },
-      highlights = {
-        enabled = true,
-        cmdline = true,
-        groups = {
-          "BlinkPairsOrange",
-          "BlinkPairsPurple",
-          "BlinkPairsBlue",
-        },
-        unmatched_group = "BlinkPairsUnmatched",
-
-        -- highlights matching pairs under the cursor
-        matchparen = {
-          enabled = true,
-          -- known issue where typing won't update matchparen highlight, disabled by default
-          cmdline = false,
-          -- also include pairs not on top of the cursor, but surrounding the cursor
-          include_surrounding = false,
-          group = "BlinkPairsMatchParen",
-          priority = 250,
-        },
-      },
-      debug = false,
-    },
   },
 
   {
@@ -410,7 +328,7 @@ return {
       vim.api.nvim_create_autocmd({ "VimEnter", "BufEnter" }, {
         group = vim.api.nvim_create_augroup("BookmarksGroup", {}),
         pattern = { "*" },
-        callback = find_or_create_project_bookmark_group,
+        callback = helpers.find_or_create_project_bookmark_group(),
       })
     end,
   },
@@ -697,6 +615,22 @@ return {
       debug = {
         enabled = true, -- we expect your collaboration at least during the beta
         show_scores = true, -- to help us optimize the scoring system, feel free to share your scores!
+      },
+    },
+  },
+
+  {
+    "folke/sidekick.nvim",
+    event = "VeryLazy",
+    opts = {
+      nes = { enabled = false },
+      cli = {
+        tools = {
+          coco = {
+            cmd = { "coco" },
+            title = "Coco AI",
+          },
+        },
       },
     },
   },

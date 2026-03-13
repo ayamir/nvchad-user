@@ -464,6 +464,46 @@ local mappings = {
     -- 手动格式化当前缓冲区
     ["n|<A-S-f>"] = map_cr("Format"):with_noremap():with_silent():with_desc("Format buffer"),
   },
+
+  -- Sidekick 映射
+  plugin_sidekick = {
+    ["nitx|<A-c>"] = map_callback(function()
+        require("sidekick.cli").toggle({ name = "coco", focus = true })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Sidekick Toggle"),
+    ["n|<leader>ad"] = map_callback(function()
+        require("sidekick.cli").close()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Detach a CLI Session"),
+    ["nx|<leader>at"] = map_callback(function()
+        require("sidekick.cli").send({ msg = "{this}" })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Send This"),
+    ["n|<leader>af"] = map_callback(function()
+        require("sidekick.cli").send({ msg = "{file}" })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Send File"),
+    ["x|<leader>av"] = map_callback(function()
+        require("sidekick.cli").send({ msg = "{selection}" })
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Send Visual Selection"),
+    ["nx|<leader>ap"] = map_callback(function()
+        require("sidekick.cli").prompt()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Sidekick Select Prompt"),
+  },
 }
 
 -- Goto buffer with <A-number>
