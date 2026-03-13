@@ -468,7 +468,11 @@ local mappings = {
   -- Sidekick 映射
   plugin_sidekick = {
     ["nitx|<A-c>"] = map_callback(function()
-        require("sidekick.cli").toggle({ name = "coco", focus = true })
+        if require("utils.helpers").is_nixos() or require("utils.helpers").is_archlinux() then
+          require("sidekick.cli").toggle({ name = "claude", focus = true })
+        else
+          require("sidekick.cli").toggle({ name = "coco", focus = true })
+        end
       end)
       :with_noremap()
       :with_silent()
