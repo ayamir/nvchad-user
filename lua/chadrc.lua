@@ -5,12 +5,10 @@
 ---@type ChadrcConfig
 local M = {}
 
-local helpers = require("utils.helpers")
-
 M.base46 = {
   theme = "catppuccin",
   theme_toggle = { "catppuccin", "catppuccin-latte" },
-  transparency = helpers.is_nixos(),
+  transparency = true,
 
   hl_override = {
     ["@comment"] = { italic = true },
