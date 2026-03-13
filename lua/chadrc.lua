@@ -7,7 +7,7 @@ local M = {}
 
 M.base46 = {
   theme = "catppuccin",
-  theme_toggle = { "catppuccin", "catppuccin_latte" },
+  theme_toggle = { "catppuccin", "catppuccin-latte" },
   transparency = true,
 
   hl_override = {
@@ -42,6 +42,9 @@ M.base46 = {
   integrations = {
     "hop",
     "bookmarks",
+    "blink",
+    "blink-pair",
+    "blankline",
     "treesitter",
     "dap",
     "blankline",
