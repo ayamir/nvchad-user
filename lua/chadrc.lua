@@ -71,6 +71,9 @@ M.ui = {
   tabufline = {
     lazyload = false,
   },
+  telescope = {
+    style = "bordered",
+  },
 }
 M.term = {
   base46_colors = true,
