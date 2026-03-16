@@ -1,8 +1,12 @@
 local M = {}
 
 local Terminal = require("toggleterm.terminal").Terminal
+local vibe = "coco"
+if require("utils.helpers").is_nixos() or require("utils.helpers").is_archlinux() then
+  vibe = "claude"
+end
 
-local names = { "coco", "lazygit", "main" }
+local names = { vibe, "git", "main" }
 local project_root = vim.fn.getcwd()
 local project_name = vim.fn.fnamemodify(project_root, ":t")
 

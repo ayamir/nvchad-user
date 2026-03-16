@@ -627,8 +627,12 @@ return {
       cli = {
         tools = {
           coco = {
-            cmd = { "coco" },
+            cmd = { "claude" },
             title = "Coco AI",
+          },
+          claude = {
+            cmd = { "claude" },
+            title = "Claude Code",
           },
         },
       },
