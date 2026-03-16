@@ -8,7 +8,7 @@ local M = {}
 M.base46 = {
   theme = "catppuccin",
   theme_toggle = { "catppuccin", "catppuccin-latte" },
-  transparency = true,
+  transparency = false,
 
   hl_override = {
     ["@comment"] = { italic = true },
