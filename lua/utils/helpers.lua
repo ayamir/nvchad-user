@@ -1,5 +1,9 @@
 local M = {}
 
+function M.is_linux()
+  return M.is_nixos() or M.is_archlinux()
+end
+
 -- 检查当前系统是否为 NixOS
 function M.is_nixos()
   local f = io.open("/etc/os-release", "r")

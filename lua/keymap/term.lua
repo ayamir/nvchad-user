@@ -1,8 +1,9 @@
 local M = {}
 
+local helper = require("utils.helpers")
 local Terminal = require("toggleterm.terminal").Terminal
 local vibe = "coco"
-if require("utils.helpers").is_nixos() or require("utils.helpers").is_archlinux() then
+if helper.is_linux() then
   vibe = "claude"
 end
 
@@ -51,9 +52,11 @@ for i = 1, 3 do
       vim.opt_local.winbar = "  " .. term_name
 
       -- 设置浮窗背景透明
-      vim.api.nvim_set_option_value("winblend", 0, { scope = "local" })
-      vim.cmd("hi NormalFloat guibg=NONE")
-      vim.cmd("hi FloatBorder guibg=NONE")
+      if helper.is_linux() then
+        vim.api.nvim_set_option_value("winblend", 0, { scope = "local" })
+        vim.cmd("hi NormalFloat guibg=NONE")
+        vim.cmd("hi FloatBorder guibg=NONE")
+      end
 
       local function refresh()
         if term.job_id then
