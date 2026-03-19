@@ -104,25 +104,34 @@ vim.lsp.config("gopls", {
   },
   settings = {
     gopls = {
+      -- 以“索引/跳转/查找”为主：尽量减少会导致大范围刷新/计算的功能
+      -- 需要诊断/代码体检时再按需开启（例如 staticcheck / analyses / codelens）
       analyses = {
-        efaceany = false, -- 在此处禁用 efaceany
-        unusedparams = true,
+        efaceany = false, -- 保留你之前的定向禁用
+        unusedparams = false,
       },
       staticcheck = false,
-      semanticTokens = true,
       usePlaceholders = false,
       completeUnimported = true,
       symbolMatcher = "Fuzzy",
       buildFlags = { "-tags", "integration" },
-      semanticTokenTypes = { string = false },
+
+      -- 仅索引时建议关闭 codelens（会触发额外 request，恢复窗口后更容易卡）
       codelenses = {
-        generate = true,
-        gc_details = true,
-        test = true,
-        tidy = true,
-        vendor = true,
-        regenerate_cgo = true,
-        upgrade_dependency = true,
+        generate = false,
+        gc_details = false,
+        test = false,
+        tidy = false,
+        vendor = false,
+        regenerate_cgo = false,
+        upgrade_dependency = false,
+      },
+
+      -- 大仓库里减少无关目录的扫描，通常能明显提升索引体验
+      directoryFilters = {
+        "-.git",
+        "-node_modules",
+        "-vendor",
       },
     },
   },
