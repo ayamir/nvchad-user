@@ -275,7 +275,8 @@ return {
 
   {
     "ayamir/garbage-day.nvim",
-    enabled = vim.fn.has("unix") == 0 or vim.fn.has("mac") == 1, -- 在 Linux 上禁用此插件，macOS 上启用
+    enabled = false,
+    -- enabled = vim.fn.has("unix") == 0 or vim.fn.has("mac") == 1, -- 在 Linux 上禁用此插件，macOS 上启用
     lazy = true,
     event = "LspAttach",
     config = function()
