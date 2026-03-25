@@ -431,7 +431,18 @@ local mappings = {
     ["n|<leader>fm"] = map_cr("Telescope notify"):with_noremap():with_silent():with_desc("Notify history"),
     ["n|<leader>s"] = map_cr("GrugFar"):with_noremap():with_silent():with_desc("Grep/replace (GrugFar)"),
     -- 覆盖 NvChad 内置 telescope mapping
-    ["n|<leader>ff"] = map_cr("FzfLua files"):with_noremap():with_silent():with_desc("Find files"),
+    -- 在 git 仓库里用 git_files（极快，读 git 索引），否则 fallback 到 files
+    ["n|<leader>ff"] = map_callback(function()
+        local ok = vim.fn.system("git rev-parse --is-inside-work-tree 2>/dev/null")
+        if vim.trim(ok) == "true" then
+          require("fzf-lua").git_files()
+        else
+          require("fzf-lua").files()
+        end
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Find files (git_files / files)"),
     ["n|<leader>fw"] = map_cr("FzfLua live_grep"):with_noremap():with_silent():with_desc("Live grep"),
     ["n|<leader>fb"] = map_cr("FzfLua buffers"):with_noremap():with_silent():with_desc("Find buffers"),
     ["n|<leader>fo"] = map_cr("FzfLua oldfiles"):with_noremap():with_silent():with_desc("Find oldfiles"),
