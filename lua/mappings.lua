@@ -241,8 +241,14 @@ local mappings = {
       :with_silent()
       :with_desc("FFF files"),
 
-    ["n|<leader>fg"] = map_cr("AdvancedGitSearch search_log_content"):with_noremap():with_silent():with_desc("[g]it log search"),
-    ["nv|<leader>fd"] = map_cr("AdvancedGitSearch diff_commit_file"):with_noremap():with_silent():with_desc("[d]iff git commit file search"),
+    ["n|<leader>fg"] = map_cr("AdvancedGitSearch search_log_content")
+      :with_noremap()
+      :with_silent()
+      :with_desc("[g]it log search"),
+    ["nv|<leader>fd"] = map_cr("AdvancedGitSearch diff_commit_file")
+      :with_noremap()
+      :with_silent()
+      :with_desc("[d]iff git commit file search"),
 
     ["n|<leader>gf"] = map_cr("DiffviewFileHistory"):with_noremap():with_silent():with_desc("Diffview file history"),
     ["n|<leader>gd"] = map_cr("DiffviewOpen"):with_noremap():with_silent():with_desc("Diffview open"),
@@ -446,6 +452,10 @@ local mappings = {
     ["n|<leader>fw"] = map_cr("FzfLua live_grep"):with_noremap():with_silent():with_desc("Live grep"),
     ["n|<leader>fb"] = map_cr("FzfLua buffers"):with_noremap():with_silent():with_desc("Find buffers"),
     ["n|<leader>fo"] = map_cr("FzfLua oldfiles"):with_noremap():with_silent():with_desc("Find oldfiles"),
+    ["n|<leader>fc"] = map_cr("Telescope frecency workspace=CWD")
+      :with_noremap()
+      :with_silent()
+      :with_desc("Find files (frecency)"),
     ["n|<leader>fz"] = map_cr("FzfLua blines"):with_noremap():with_silent():with_desc("Fuzzy current buffer"),
     ["n|<leader>cm"] = map_cr("FzfLua git_commits"):with_noremap():with_silent():with_desc("Git commits"),
     ["n|<leader>gt"] = map_cr("FzfLua git_status"):with_noremap():with_silent():with_desc("Git status"),

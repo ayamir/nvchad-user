@@ -90,11 +90,15 @@ return {
         "nvim-telescope/telescope-fzf-native.nvim",
         build = "make",
       },
+      {
+        "nvim-telescope/telescope-frecency.nvim",
+        dependencies = { "kkharji/sqlite.lua" },
+      },
     },
     opts = function()
       return {
         defaults = require("telescope.themes").get_ivy({
-          sorting_strategy = "descending",
+          sorting_strategy = "ascending",
         }),
         extensions = {
           fzf = {
@@ -110,6 +114,7 @@ return {
       local telescope = require("telescope")
       telescope.setup(opts)
       telescope.load_extension("fzf")
+      telescope.load_extension("frecency")
     end,
   },
 
