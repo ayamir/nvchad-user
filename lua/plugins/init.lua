@@ -345,7 +345,7 @@ return {
       vim.api.nvim_create_autocmd({ "VimEnter", "BufEnter" }, {
         group = vim.api.nvim_create_augroup("BookmarksGroup", {}),
         pattern = { "*" },
-        callback = helpers.find_or_create_project_bookmark_group(),
+        callback = helpers.find_or_create_project_bookmark_group,
       })
     end,
   },
