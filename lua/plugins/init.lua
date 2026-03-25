@@ -85,16 +85,32 @@ return {
 
   {
     "nvim-telescope/telescope.nvim",
-    opts = {
-      defaults = {
-        sorting_strategy = "descending",
-        layout_config = {
-          horizontal = {
-            prompt_position = "bottom",
-          },
-        },
+    dependencies = {
+      {
+        "nvim-telescope/telescope-fzf-native.nvim",
+        build = "make",
       },
     },
+    opts = function()
+      return {
+        defaults = require("telescope.themes").get_ivy({
+          sorting_strategy = "descending",
+        }),
+        extensions = {
+          fzf = {
+            fuzzy = true,
+            override_generic_sorter = true,
+            override_file_sorter = true,
+            case_mode = "smart_case",
+          },
+        },
+      }
+    end,
+    config = function(_, opts)
+      local telescope = require("telescope")
+      telescope.setup(opts)
+      telescope.load_extension("fzf")
+    end,
   },
 
   {
@@ -564,19 +580,18 @@ return {
         extensions = {
           advanced_git_search = {
             diff_plugin = "diff_view",
-            how_builtin_git_pickers = false,
+            show_builtin_git_pickers = false,
             entry_default_author_or_date = "both",
             keymaps = {
               toggle_date_author = "<C-w>",
               open_commit_in_browser = "<C-o>",
               copy_commit_hash = "<C-y>",
-              copy_commit_patch = "<C-g>", -- telescope only
+              copy_commit_patch = "<C-p>",
               show_entire_commit = "<C-e>",
             },
           },
         },
       })
-
       require("telescope").load_extension("advanced_git_search")
     end,
     dependencies = {
@@ -604,19 +619,6 @@ return {
         autoselect_longest_match = true,
       })
     end,
-  },
-
-  {
-    "dmtrKovalenko/fff.nvim",
-    build = function()
-      require("fff.download").download_or_build_binary()
-    end,
-    opts = { -- (optional)
-      debug = {
-        enabled = true, -- we expect your collaboration at least during the beta
-        show_scores = true, -- to help us optimize the scoring system, feel free to share your scores!
-      },
-    },
   },
 
   {

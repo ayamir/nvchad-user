@@ -241,19 +241,8 @@ local mappings = {
       :with_silent()
       :with_desc("FFF files"),
 
-    ["n|<leader>fg"] = map_callback(function()
-        require("telescope").extensions.advanced_git_search.search_log_content()
-      end)
-      :with_noremap()
-      :with_silent()
-      :with_desc("[g]it log search"),
-
-    ["nv|<leader>fd"] = map_callback(function()
-        require("telescope").extensions.advanced_git_search.diff_commit_file()
-      end)
-      :with_noremap()
-      :with_silent()
-      :with_desc("[d]iff git commit file search"),
+    ["n|<leader>fg"] = map_cr("AdvancedGitSearch search_log_content"):with_noremap():with_silent():with_desc("[g]it log search"),
+    ["nv|<leader>fd"] = map_cr("AdvancedGitSearch diff_commit_file"):with_noremap():with_silent():with_desc("[d]iff git commit file search"),
 
     ["n|<leader>gf"] = map_cr("DiffviewFileHistory"):with_noremap():with_silent():with_desc("Diffview file history"),
     ["n|<leader>gd"] = map_cr("DiffviewOpen"):with_noremap():with_silent():with_desc("Diffview open"),
@@ -431,16 +420,25 @@ local mappings = {
         if not text then
           return
         end
-        require("telescope.builtin").grep_string({ search = text })
+        require("fzf-lua").grep({ search = text })
       end)
       :with_noremap()
       :with_silent()
       :with_desc("Grep selection"),
-    ["n|<leader>fs"] = map_cr("Telescope grep_string"):with_noremap():with_silent():with_desc("Grep cword"),
-    ["n|<leader>fr"] = map_cr("Telescope resume"):with_noremap():with_silent():with_desc("Resume Telescope"),
+    ["n|<leader>fs"] = map_cr("FzfLua grep_cword"):with_noremap():with_silent():with_desc("Grep cword"),
+    ["n|<leader>fr"] = map_cr("FzfLua resume"):with_noremap():with_silent():with_desc("Resume FzfLua"),
+    ["n|<leader>fR"] = map_cr("Telescope resume"):with_noremap():with_silent():with_desc("Resume Telescope"),
     ["n|<leader>fm"] = map_cr("Telescope notify"):with_noremap():with_silent():with_desc("Notify history"),
-    ["n|<leader>fR"] = map_cr("FzfLua resume"):with_noremap():with_silent():with_desc("Resume FzfLua"),
     ["n|<leader>s"] = map_cr("GrugFar"):with_noremap():with_silent():with_desc("Grep/replace (GrugFar)"),
+    -- 覆盖 NvChad 内置 telescope mapping
+    ["n|<leader>ff"] = map_cr("FzfLua files"):with_noremap():with_silent():with_desc("Find files"),
+    ["n|<leader>fw"] = map_cr("FzfLua live_grep"):with_noremap():with_silent():with_desc("Live grep"),
+    ["n|<leader>fb"] = map_cr("FzfLua buffers"):with_noremap():with_silent():with_desc("Find buffers"),
+    ["n|<leader>fo"] = map_cr("FzfLua oldfiles"):with_noremap():with_silent():with_desc("Find oldfiles"),
+    ["n|<leader>fz"] = map_cr("FzfLua blines"):with_noremap():with_silent():with_desc("Fuzzy current buffer"),
+    ["n|<leader>cm"] = map_cr("FzfLua git_commits"):with_noremap():with_silent():with_desc("Git commits"),
+    ["n|<leader>gt"] = map_cr("FzfLua git_status"):with_noremap():with_silent():with_desc("Git status"),
+    ["n|<leader>ma"] = map_cr("FzfLua marks"):with_noremap():with_silent():with_desc("Find marks"),
   },
 
   plugin_pack = {

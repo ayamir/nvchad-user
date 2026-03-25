@@ -7,7 +7,7 @@ local M = {}
 local helper = require("utils.helpers")
 
 M.base46 = {
-  theme = "catppuccin",
+  theme = "catppuccin-latte",
   theme_toggle = { "catppuccin", "catppuccin-latte" },
   transparency = helper.is_nixos(),
 
