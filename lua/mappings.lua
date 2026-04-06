@@ -7,14 +7,14 @@ local map_cmd = bind.map_cmd
 local map_callback = bind.map_callback
 
 local function get_visual_selection()
-  local save_reg = vim.fn.getreg("v") -- 备份 v 寄存器
+  local save_reg = vim.fn.getreg("v")
   local save_type = vim.fn.getregtype("v")
 
-  vim.cmd([[noau normal! "vy]]) -- 选区内容 -> v 寄存器
+  vim.cmd([[noau normal! "vy]])
   local text = vim.fn.getreg("v")
-  vim.fn.setreg("v", save_reg, save_type) -- 还原 v 寄存器
+  vim.fn.setreg("v", save_reg, save_type)
 
-  text = text:gsub("\n", "") -- 去掉换行，防止搜索串断裂
+  text = text:gsub("\n", "")
   return #text > 0 and text or nil
 end
 

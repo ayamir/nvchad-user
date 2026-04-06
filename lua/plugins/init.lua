@@ -22,8 +22,8 @@ return {
     dependencies = {
       {
         "saghen/blink.compat",
-        version = "v2.*", -- blink.cmp v1.* 对应 blink.compat v2.*
-        opts = {}, -- 需要让 lazy.nvim 调用 blink.compat 的 setup
+        version = "v2.*",
+        opts = {},
       },
       {
         "git@code.byted.org:chenjiaqi.cposture/codeverse.vim.git",
@@ -46,17 +46,13 @@ return {
     opts = function(_, opts)
       opts = opts or {}
 
-      -- 使用 NvChad 设定的 completion.menu 样式（kind_icon / label / kind），不改 columns。
-      -- 参考：/Users/bytedance/.local/share/nvim/lazy/nvchad-ui/lua/nvchad/blink/config.lua
       opts.completion = opts.completion or {}
-      opts.completion.ghost_text = { enabled = true }
+      opts.completion.ghost_text = { enabled = false }
       opts.completion.list = { max_items = 120 }
       local menu = vim.deepcopy(require("nvchad.blink").menu)
       menu.draw = menu.draw or {}
       menu.draw.components = menu.draw.components or {}
       menu.draw.components.kind = menu.draw.components.kind or {}
-      -- NvChad 的 menu 右侧列是 `kind`，默认会显示 `Property` 等类型。
-      -- 对 trae 来源，将其替换为 `Trae`，这样无需增加 source_name 列也能区分。
       menu.draw.components.kind.text = function(ctx)
         if ctx.source_id == "trae" then
           return "Trae"
@@ -281,7 +277,7 @@ return {
   {
     "ayamir/garbage-day.nvim",
     enabled = false,
-    -- enabled = vim.fn.has("unix") == 0 or vim.fn.has("mac") == 1, -- 在 Linux 上禁用此插件，macOS 上启用
+    -- enabled = vim.fn.has("unix") == 0 or vim.fn.has("mac") == 1,
     lazy = true,
     event = "LspAttach",
     config = function()

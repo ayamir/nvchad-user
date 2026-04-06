@@ -2,24 +2,20 @@ require("nvchad.autocmds")
 
 local autocmd = {}
 
--- 1. 取到已装 parser 的 language 列表
 local deps = require("settings").treesitter_deps or {}
 
--- 2. language -> filetype 反向索引
 local ft_ok = {} -- key: filetype, value: true
 for _, lang in ipairs(deps) do
-  -- 一个 language 可能对应多个 filetype
   for _, ft in ipairs(vim.treesitter.language.get_filetypes(lang)) do
     ft_ok[ft] = true
   end
 end
 
--- 3. 只给这些 filetype 启动高亮
 vim.api.nvim_create_autocmd("FileType", {
   group = vim.api.nvim_create_augroup("TSHighlight", { clear = true }),
   callback = function(args)
     if ft_ok[vim.bo[args.buf].filetype] then
-      vim.treesitter.start(args.buf) -- 自动识别 language
+      vim.treesitter.start(args.buf)
     end
   end,
 })
@@ -49,7 +45,6 @@ vim.api.nvim_create_autocmd("User", {
   end,
 })
 
--- format on save: 可动态开关
 local function enable_format_on_save(is_configured)
   local group = vim.api.nvim_create_augroup("FormatOnSave", { clear = true })
   vim.api.nvim_create_autocmd("BufWritePre", {
@@ -83,10 +78,8 @@ local function toggle_format_on_save()
   end
 end
 
--- 启动时默认启用一次（保持原来的行为）
 enable_format_on_save(true)
 
--- 用户命令：手动格式化 + 动态开关
 vim.api.nvim_create_user_command("Format", function()
   require("conform").format({
     async = false,
