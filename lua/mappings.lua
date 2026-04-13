@@ -233,13 +233,6 @@ local mappings = {
       :with_expr()
       :with_desc("Prev git hunk"),
 
-    ["n|ff"] = map_callback(function()
-        require("fff").find_files()
-      end)
-      :with_noremap()
-      :with_silent()
-      :with_desc("FFF files"),
-
     ["n|<leader>fg"] = map_cr("AdvancedGitSearch search_log_content")
       :with_noremap()
       :with_silent()
