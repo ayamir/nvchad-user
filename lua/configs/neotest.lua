@@ -25,7 +25,7 @@ return function()
           "-race",
           "-count=1",
           "-failfast",
-          "-gcflags='all=-N -l'",
+          "-gcflags=all=-N -l",
         },
         warn_test_name_dupes = false,
       }),
