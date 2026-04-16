@@ -9,7 +9,7 @@ local helper = require("utils.helpers")
 M.base46 = {
   theme = "catppuccin",
   theme_toggle = { "catppuccin", "catppuccin-latte" },
-  transparency = helper.is_nixos(),
+  transparency = helper.is_linux(),
 
   hl_override = {
     ["@comment"] = { italic = true },
