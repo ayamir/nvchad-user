@@ -713,14 +713,14 @@ return {
         desc = "FFFind files",
       },
       {
-        "fg",
+        "fw",
         function()
           require("fff").live_grep()
         end,
         desc = "LiFFFe grep",
       },
       {
-        "fz",
+        "fp",
         function()
           require("fff").live_grep({
             grep = {
@@ -731,7 +731,7 @@ return {
         desc = "Live fffuzy grep",
       },
       {
-        "fc",
+        "fs",
         function()
           require("fff").live_grep({ query = vim.fn.expand("<cword>") })
         end,
