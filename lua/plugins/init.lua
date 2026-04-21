@@ -739,4 +739,19 @@ return {
       },
     },
   },
+
+  {
+    "MeanderingProgrammer/render-markdown.nvim",
+    lazy = true,
+    ft = { "markdown", "codecompanion" },
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
+    opts = {
+      enabled = true,
+      max_file_size = 2.0,
+      debounce = 100,
+      render_modes = { "n", "c", "t" },
+      anti_conceal = { enabled = true },
+      log_level = "error",
+    },
+  },
 }
