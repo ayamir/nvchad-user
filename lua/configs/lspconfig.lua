@@ -72,36 +72,40 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 vim.lsp.config("*", { capabilities = capabilities, on_init = on_init })
 
-local servers = { "gopls", "jsonls", "zuban", "bashls", "buf_ls", "nixd" }
-vim.lsp.enable(servers)
+local function enable_mason_installed_servers()
+  local ok_mlsp, mlsp = pcall(require, "mason-lspconfig")
+  if not ok_mlsp then
+    return
+  end
+
+  -- 仅用于“根据已安装的 Mason server 自动启用 LSP”，不强制安装。
+  -- 这里的 setup 主要用来确保 mason-lspconfig 的 server 映射已加载。
+  mlsp.setup({})
+
+  -- 避免和 rustaceanvim 重复启动 rust-analyzer
+  local excluded = { rust_analyzer = true }
+
+  local installed = mlsp.get_installed_servers()
+  if type(installed) ~= "table" or vim.tbl_isempty(installed) then
+    return
+  end
+
+  local to_enable = {}
+  for _, name in ipairs(installed) do
+    if not excluded[name] then
+      table.insert(to_enable, name)
+    end
+  end
+
+  if #to_enable > 0 then
+    vim.lsp.enable(to_enable)
+  end
+end
+
 vim.lsp.config("gopls", {
   cmd = { "gopls", "-remote.debug=:0", "-remote=auto" },
   filetypes = { "go", "gomod", "gosum", "gotmpl", "gohtmltmpl", "gotexttmpl" },
   flags = { allow_incremental_sync = true, debounce_text_changes = 500 },
-  capabilities = {
-    textDocument = {
-      completion = {
-        contextSupport = true,
-        dynamicRegistration = true,
-        completionItem = {
-          commitCharactersSupport = true,
-          deprecatedSupport = true,
-          preselectSupport = true,
-          insertReplaceSupport = true,
-          labelDetailsSupport = true,
-          snippetSupport = true,
-          documentationFormat = { "markdown", "plaintext" },
-          resolveSupport = {
-            properties = {
-              "documentation",
-              "details",
-              "additionalTextEdits",
-            },
-          },
-        },
-      },
-    },
-  },
   settings = {
     gopls = {
       -- 以“索引/跳转/查找”为主：尽量减少会导致大范围刷新/计算的功能
@@ -223,3 +227,5 @@ vim.lsp.config("nixd", {
     },
   },
 })
+
+enable_mason_installed_servers()
