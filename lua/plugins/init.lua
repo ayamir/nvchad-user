@@ -28,23 +28,6 @@ return {
         version = "v2.*",
         opts = {},
       },
-      {
-        "git@code.byted.org:chenjiaqi.cposture/codeverse.vim.git",
-        cond = not (helpers.is_nixos() or helpers.is_archlinux()),
-        lazy = true,
-        event = "InsertEnter",
-        init = function()
-          vim.g.trae_disable_autocompletion = true
-          vim.g.trae_no_map_tab = true
-          vim.g.trae_disable_bindings = true
-        end,
-        config = function()
-          vim.g.trae_disable_autocompletion = true
-          vim.g.trae_no_map_tab = true
-          vim.g.trae_disable_bindings = true
-          require("trae").setup()
-        end,
-      },
     },
     opts = function(_, opts)
       opts = opts or {}
@@ -67,16 +50,7 @@ return {
       -- Sources
       opts.sources = opts.sources or {}
       opts.sources.default = opts.sources.default or { "lsp", "buffer", "snippets", "path" }
-      if not vim.tbl_contains(opts.sources.default, "trae") then
-        table.insert(opts.sources.default, 1, "trae")
-      end
-
       opts.sources.providers = opts.sources.providers or {}
-      opts.sources.providers.trae = {
-        name = "Trae",
-        module = "blink.compat.source",
-        opts = { cmp_name = "trae" },
-      }
 
       return opts
     end,
