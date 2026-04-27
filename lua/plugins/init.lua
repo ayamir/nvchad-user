@@ -640,7 +640,7 @@ return {
     event = "VeryLazy",
     opts = {
       cmdline = { enabled = false },
-      message = { enabled = false },
+      messages = { enabled = false },
       -- add any options here
       lsp = {
         -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
