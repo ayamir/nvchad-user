@@ -6,4 +6,5 @@ return {
     "prompt",
   },
   ignored_filetypes = { "NvimTree" },
+  at_edge = "wrap",
 }
