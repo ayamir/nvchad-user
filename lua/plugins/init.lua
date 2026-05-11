@@ -608,6 +608,11 @@ return {
     opts = {
       nes = { enabled = true },
       cli = {
+        win = {
+          split = {
+            width = 0.4,
+          },
+        },
         mux = {
           backend = "zellij",
           enabled = true,
