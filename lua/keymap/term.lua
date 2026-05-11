@@ -84,7 +84,7 @@ for i = 1, 3 do
     cmd = default_cmd,
     on_open = function(term)
       last_active = term.id
-      vim.opt_local.winbar = "  " .. term_name
+      vim.opt_local.winbar = ""
 
       if helper.is_linux() then
         -- 设置浮窗背景不透明，因为 linux 上已经配置整体透明
