@@ -32,6 +32,19 @@ return {
     opts = function(_, opts)
       opts = opts or {}
 
+      opts.keymap = opts.keymap or {}
+      opts.keymap["<Tab>"] = {
+        "select_next",
+        "snippet_forward",
+        function()
+          return require("sidekick").nes_jump_or_apply()
+        end,
+        function()
+          return vim.lsp.inline_completion and vim.lsp.inline_completion.get and vim.lsp.inline_completion.get()
+        end,
+        "fallback",
+      }
+
       opts.completion = opts.completion or {}
       opts.completion.ghost_text = { enabled = false }
       opts.completion.list = { max_items = 120 }
@@ -593,12 +606,24 @@ return {
     "folke/sidekick.nvim",
     event = "VeryLazy",
     opts = {
-      nes = { enabled = false },
+      nes = { enabled = true },
       cli = {
+        mux = {
+          backend = "zellij",
+          enabled = true,
+        },
         tools = {
           coco = {
-            cmd = { "claude" },
-            title = "Coco AI",
+            cmd = { "coco" },
+            title = "Coco",
+          },
+          aiden = {
+            cmd = { "aiden" },
+            title = "Aiden",
+          },
+          codex = {
+            cmd = { "codex" },
+            title = "Codex",
           },
           claude = {
             cmd = { "claude" },

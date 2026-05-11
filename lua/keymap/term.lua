@@ -2,12 +2,7 @@ local M = {}
 
 local helper = require("utils.helpers")
 local Terminal = require("toggleterm.terminal").Terminal
-local vibe = "coco"
-if helper.is_linux() then
-  vibe = "claude"
-end
-
-local names = { vibe, "git", "main" }
+local names = { "agent", "git", "main" }
 local project_root = vim.fn.getcwd()
 local project_name = vim.fn.fnamemodify(project_root, ":t")
 
@@ -27,7 +22,11 @@ local function get_session_prefix(term_name)
 end
 
 local function build_zellij_cmd(session_name)
-  return string.format("cd %s && zellij attach -c %s", vim.fn.shellescape(project_root), vim.fn.shellescape(session_name))
+  return string.format(
+    "cd %s && zellij attach -c %s",
+    vim.fn.shellescape(project_root),
+    vim.fn.shellescape(session_name)
+  )
 end
 
 -- zellij CLI 不暴露 last activity，这里只能按创建时间判断“过期”。
@@ -194,7 +193,10 @@ local function confirm_and_cleanup_sessions(expired_sessions, title_lines)
     table.insert(msg_lines, string.format("  - %s%s (创建于 %.1f 天前)", session.name, suffix, session.age_days))
   end
   table.insert(msg_lines, "")
-  table.insert(msg_lines, "注意：zellij CLI 不提供最近活跃时间，这里按创建时间判断，可能包含仍在使用的会话。")
+  table.insert(
+    msg_lines,
+    "注意：zellij CLI 不提供最近活跃时间，这里按创建时间判断，可能包含仍在使用的会话。"
+  )
   table.insert(msg_lines, "是否清理这些会话？")
 
   local choice = vim.fn.confirm(table.concat(msg_lines, "\n"), "&Yes\n&No", 2)
@@ -392,7 +394,10 @@ M.cleanup_expired_sessions = function()
     table.insert(msg_lines, string.format("  - %s%s (创建于 %.1f 天前)", session.name, suffix, session.age_days))
   end
   table.insert(msg_lines, "")
-  table.insert(msg_lines, "注意：zellij CLI 不提供最近活跃时间，这里按创建时间判断，可能包含仍在使用的会话。")
+  table.insert(
+    msg_lines,
+    "注意：zellij CLI 不提供最近活跃时间，这里按创建时间判断，可能包含仍在使用的会话。"
+  )
   table.insert(msg_lines, "是否清理这些会话？")
 
   local choice = vim.fn.confirm(table.concat(msg_lines, "\n"), "&Yes\n&No", 2)
