@@ -12,3 +12,5 @@ o.cursorcolumn = false
 o.wrap = true
 o.splitkeep = "cursor"
 o.equalalways = true
+
+vim.opt.sessionoptions:remove("terminal")

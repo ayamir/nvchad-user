@@ -105,6 +105,16 @@ return {
   },
 
   {
+    "stevearc/dressing.nvim",
+    lazy = false,
+    opts = {
+      select = {
+        backend = { "telescope", "builtin" },
+      },
+    },
+  },
+
+  {
     "nvim-tree/nvim-tree.lua",
     opts = {
       on_attach = function(bufnr)
@@ -608,6 +618,7 @@ return {
     opts = {
       nes = { enabled = true },
       cli = {
+        picker = "telescope",
         win = {
           split = {
             width = 0.4,

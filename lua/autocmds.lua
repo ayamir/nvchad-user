@@ -24,6 +24,7 @@ vim.api.nvim_create_autocmd("User", {
   pattern = "PersistedSavePre",
   callback = function()
     local fts = {
+      "zellij",
       "codecompanion",
       "NvimTree",
       "Trouble",
@@ -36,10 +37,9 @@ vim.api.nvim_create_autocmd("User", {
     }
     for _, buf in ipairs(vim.api.nvim_list_bufs()) do
       local ft = vim.bo[buf].filetype
-      for _, ft_ in pairs(fts) do
-        if ft == ft_ then
-          vim.api.nvim_buf_delete(buf, { force = true })
-        end
+      local bt = vim.bo[buf].buftype
+      if bt == "terminal" or vim.tbl_contains(fts, ft) then
+        pcall(vim.api.nvim_buf_delete, buf, { force = true })
       end
     end
   end,
