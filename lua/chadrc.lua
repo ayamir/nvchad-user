@@ -6,6 +6,37 @@
 local M = {}
 local helper = require("utils.helpers")
 
+local function sidekick_statusline()
+  local ok, sidekick = pcall(require, "sidekick.status")
+  if not ok then
+    return ""
+  end
+
+  local parts = {}
+  local status = sidekick.get()
+  local sessions = sidekick.cli()
+
+  if status then
+    local hl = "%#St_LspInfo#"
+    if status.kind == "Error" then
+      hl = "%#St_lspError#"
+    elseif status.busy then
+      hl = "%#St_lspWarning#"
+    end
+    parts[#parts + 1] = hl .. " "
+  end
+
+  if #sessions > 0 then
+    parts[#parts + 1] = "%#St_LspInfo# " .. (#sessions > 1 and #sessions or "") .. " "
+  end
+
+  if #parts == 0 then
+    return ""
+  end
+
+  return " " .. table.concat(parts, "")
+end
+
 M.base46 = {
   theme = "catppuccin",
   theme_toggle = { "catppuccin", "catppuccin-latte" },
@@ -67,6 +98,12 @@ M.base46 = {
 
 M.nvdash = { load_on_startup = true }
 M.ui = {
+  statusline = {
+    order = { "mode", "file", "git", "%=", "lsp_msg", "sidekick", "%=", "diagnostics", "lsp", "cwd", "cursor" },
+    modules = {
+      sidekick = sidekick_statusline,
+    },
+  },
   tabufline = {
     lazyload = false,
   },

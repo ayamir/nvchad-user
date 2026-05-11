@@ -616,7 +616,7 @@ return {
     "folke/sidekick.nvim",
     event = "VeryLazy",
     opts = {
-      nes = { enabled = true },
+      nes = { enabled = false },
       cli = {
         picker = "telescope",
         win = {
