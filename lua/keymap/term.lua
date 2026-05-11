@@ -26,8 +26,44 @@ local function get_session_prefix(term_name)
   return string.format("%s_%s_%s", project_name, branch, term_name)
 end
 
--- 清理配置：超过多少秒的会话会被认为是过期的（默认 7 天）
+local function build_zellij_cmd(session_name)
+  return string.format("cd %s && zellij attach -c %s", vim.fn.shellescape(project_root), vim.fn.shellescape(session_name))
+end
+
+-- zellij CLI 不暴露 last activity，这里只能按创建时间判断“过期”。
 local INACTIVE_THRESHOLD_SECONDS = 7 * 24 * 60 * 60
+
+local TIME_UNIT_SECONDS = {
+  s = 1,
+  sec = 1,
+  secs = 1,
+  second = 1,
+  seconds = 1,
+  m = 60,
+  min = 60,
+  mins = 60,
+  minute = 60,
+  minutes = 60,
+  h = 3600,
+  hr = 3600,
+  hrs = 3600,
+  hour = 3600,
+  hours = 3600,
+  d = 86400,
+  day = 86400,
+  days = 86400,
+  w = 604800,
+  week = 604800,
+  weeks = 604800,
+  mo = 2592000,
+  month = 2592000,
+  months = 2592000,
+  y = 31536000,
+  yr = 31536000,
+  yrs = 31536000,
+  year = 31536000,
+  years = 31536000,
+}
 
 -- 记录“上一次活跃的 term”，用于 toggle 关闭/再次打开时恢复
 local last_active = 1
@@ -40,7 +76,7 @@ for i = 1, 3 do
     return get_session_prefix(term_name)
   end
   local initial_prefix = get_initial_prefix()
-  local default_cmd = string.format("tmux new -As %s -c %s", initial_prefix, vim.fn.shellescape(project_root))
+  local default_cmd = build_zellij_cmd(initial_prefix)
 
   terms[i] = Terminal:new({
     id = i,
@@ -58,24 +94,6 @@ for i = 1, 3 do
         vim.cmd("hi FloatBorder guibg=NONE")
       end
 
-      local function refresh()
-        if term.job_id then
-          -- 动态确定当前使用的 session_name
-          local current_session = term.current_session or get_initial_prefix()
-          if not term.current_session and term.cmd:find("tmux attach -t") then
-            current_session = term.cmd:match("tmux attach %-t%s+([^%s]+)")
-          end
-
-          vim.fn.system(string.format("tmux set-option -t %s status off", current_session))
-          vim.fn.system(string.format("tmux refresh-client -t %s", current_session))
-          vim.cmd("redraw!")
-        end
-      end
-
-      -- 延迟多次刷新，确保在浮窗大小稳定后 tmux 能正确对齐
-      vim.defer_fn(refresh, 50)
-      vim.defer_fn(refresh, 200)
-
       vim.defer_fn(function()
         if term.job_id then
           vim.cmd("startinsert!")
@@ -84,76 +102,99 @@ for i = 1, 3 do
     end,
     on_exit = function(term)
       -- 退出后重置为创建新会话的命令
-      term.cmd = string.format("tmux new -As %s -c %s", get_session_prefix(term.name), vim.fn.shellescape(project_root))
+      term.cmd = build_zellij_cmd(get_session_prefix(term.name))
       term.current_session = nil
     end,
   })
 end
 
+local function parse_zellij_created_seconds(meta)
+  if not meta then
+    return nil
+  end
+
+  local created = meta:match("^Created%s+(.+)%s+ago$")
+  if not created then
+    return nil
+  end
+
+  local total = 0
+  local matched = false
+  for value, unit in created:gmatch("(%d+)%s*([%a]+)") do
+    local multiplier = TIME_UNIT_SECONDS[unit:lower()]
+    if multiplier then
+      total = total + tonumber(value) * multiplier
+      matched = true
+    end
+  end
+
+  if matched then
+    return total
+  end
+
+  return nil
+end
+
 local function get_sessions(term_name)
   local project_name_escaped = project_name:gsub("%.", "_")
-  local lines =
-    vim.fn.systemlist("tmux list-sessions -F '#{session_name} #{session_attached} #{session_activity}' 2>/dev/null")
+  local lines = vim.fn.systemlist("zellij list-sessions -n 2>/dev/null")
   if vim.v.shell_error ~= 0 then
     return {}
   end
 
   local sessions = {}
-  local now = tonumber(vim.fn.strftime("%s"))
 
   for _, line in ipairs(lines) do
-    local name, attached, activity = line:match("^([^%s]+)%s+(%d+)%s+(%d+)")
-    if not name then
-      name, attached, activity = line:match("^([^%s]+)%s+(%d+)")
-    end
-    if name and attached then
-      -- 匹配新格式: <project>_<branch>_<type>
-      local is_new_format = name:find(string.format("^%s_", project_name_escaped))
-        and name:find(string.format("_%s$", term_name))
+    if line ~= "No active zellij sessions found." then
+      local name, meta = line:match("^(.-)%s+%[(.+)%]%s*$")
+      name = name or vim.trim(line)
+      if name ~= "" then
+        local is_project_session = name:find(string.format("^%s_", project_name_escaped))
+          and name:find(string.format("_%s$", term_name))
 
-      -- 匹配旧格式: <project>_<type>_<pid> 或 <project>_<type>_<anything>
-      local is_old_format = name:find(string.format("^%s_%s_", project_name_escaped, term_name))
-
-      if is_new_format or is_old_format then
-        table.insert(sessions, {
-          name = name,
-          attached = tonumber(attached) > 0,
-          activity = tonumber(activity) or now,
-        })
+        if is_project_session then
+          table.insert(sessions, {
+            name = name,
+            meta = meta,
+            created_seconds = parse_zellij_created_seconds(meta),
+          })
+        end
       end
     end
   end
-  return sessions, now
+  return sessions
 end
 
--- 自动清理长时间未活跃的 tmux 会话
-local function cleanup_inactive_sessions(term_name)
-  local sessions, now = get_sessions(term_name)
+local function get_expired_sessions(term_name)
+  local sessions = get_sessions(term_name)
   local expired_sessions = {}
 
-  for _, s in ipairs(sessions) do
-    -- 只清理未附加的会话
-    if not s.attached then
-      local inactive_seconds = now - s.activity
-      if inactive_seconds > INACTIVE_THRESHOLD_SECONDS then
-        table.insert(expired_sessions, {
-          name = s.name,
-          inactive_days = inactive_seconds / 86400,
-        })
-      end
+  for _, session in ipairs(sessions) do
+    if session.created_seconds and session.created_seconds > INACTIVE_THRESHOLD_SECONDS then
+      table.insert(expired_sessions, {
+        name = session.name,
+        age_days = session.created_seconds / 86400,
+        meta = session.meta,
+      })
     end
   end
 
+  return expired_sessions
+end
+
+local function confirm_and_cleanup_sessions(expired_sessions, title_lines)
   if #expired_sessions == 0 then
     return 0
   end
 
-  -- 构建确认消息
-  local msg_lines = { "以下 tmux 会话已过期（超过 7 天未活跃）：", "" }
-  for _, s in ipairs(expired_sessions) do
-    table.insert(msg_lines, string.format("  - %s (已空闲 %.1f 天)", s.name, s.inactive_days))
+  local msg_lines = vim.deepcopy(title_lines)
+  table.insert(msg_lines, "")
+  for _, session in ipairs(expired_sessions) do
+    local suffix = session.meta and string.format(" [%s]", session.meta) or ""
+    table.insert(msg_lines, string.format("  - %s%s (创建于 %.1f 天前)", session.name, suffix, session.age_days))
   end
   table.insert(msg_lines, "")
+  table.insert(msg_lines, "注意：zellij CLI 不提供最近活跃时间，这里按创建时间判断，可能包含仍在使用的会话。")
   table.insert(msg_lines, "是否清理这些会话？")
 
   local choice = vim.fn.confirm(table.concat(msg_lines, "\n"), "&Yes\n&No", 2)
@@ -161,15 +202,25 @@ local function cleanup_inactive_sessions(term_name)
     return 0
   end
 
-  -- 执行清理
   local cleaned_count = 0
-  for _, s in ipairs(expired_sessions) do
-    vim.fn.system(string.format("tmux kill-session -t %s", s.name))
-    cleaned_count = cleaned_count + 1
-    vim.notify(string.format("已清理: %s", s.name), vim.log.levels.INFO)
+  for _, session in ipairs(expired_sessions) do
+    vim.fn.system(string.format("zellij kill-session %s", vim.fn.shellescape(session.name)))
+    if vim.v.shell_error == 0 then
+      cleaned_count = cleaned_count + 1
+      vim.notify(string.format("已清理: %s", session.name), vim.log.levels.INFO)
+    else
+      vim.notify(string.format("清理失败: %s", session.name), vim.log.levels.WARN)
+    end
   end
 
   return cleaned_count
+end
+
+local function cleanup_inactive_sessions(term_name)
+  local expired_sessions = get_expired_sessions(term_name)
+  return confirm_and_cleanup_sessions(expired_sessions, {
+    "以下 zellij 会话已过期（创建时间超过 7 天）：",
+  })
 end
 
 local function open_or_focus(term)
@@ -191,7 +242,7 @@ local function select_session_with_telescope(term)
   local options = { "New Session" }
   local session_map = {}
   for _, s in ipairs(sessions) do
-    local label = s.name .. (s.attached and " (active)" or " (idle)")
+    local label = s.meta and string.format("%s [%s]", s.name, s.meta) or s.name
     table.insert(options, label)
     session_map[label] = s.name
   end
@@ -214,7 +265,7 @@ local function select_session_with_telescope(term)
       },
       sorting_strategy = "ascending",
     }, {
-      prompt_title = string.format("Select tmux session for [%s]", term.name),
+      prompt_title = string.format("Select zellij session for [%s]", term.name),
       finder = finders.new_table({
         results = options,
       }),
@@ -223,12 +274,14 @@ local function select_session_with_telescope(term)
         get_command = function(entry)
           local choice = entry[1]
           if choice == "New Session" then
-            return { "echo", "Create a new tmux session" }
+            return { "echo", "Create a new zellij session" }
           end
           local session_name = session_map[choice]
-          -- 使用 tmux capture-pane 捕获内容并直接通过 termopen 显示
-          -- -e 支持颜色，-p 输出到 stdout
-          return { "tmux", "capture-pane", "-e", "-p", "-t", session_name }
+          local preview_cmd = string.format(
+            "output=$(zellij -s %s action dump-screen --full 2>/dev/null); if [ -n \"$output\" ]; then printf '%%s\\n' \"$output\"; else echo 'No screen content available'; fi",
+            vim.fn.shellescape(session_name)
+          )
+          return { "bash", "-lc", preview_cmd }
         end,
       }),
       attach_mappings = function(prompt_bufnr, map)
@@ -240,9 +293,10 @@ local function select_session_with_telescope(term)
           end
           local choice = selection[1]
           if choice ~= "New Session" then
-            term.cmd = string.format("tmux attach -t %s", session_map[choice])
+            term.cmd = build_zellij_cmd(session_map[choice])
             term.current_session = session_map[choice]
           else
+            term.cmd = build_zellij_cmd(get_session_prefix(term.name))
             term.current_session = nil
           end
           open_or_focus(term)
@@ -256,7 +310,7 @@ local function select_session_with_telescope(term)
           local choice = selection[1]
           if choice ~= "New Session" then
             local session_name = session_map[choice]
-            vim.fn.system(string.format("tmux kill-session -t %s", session_name))
+            vim.fn.system(string.format("zellij kill-session %s", vim.fn.shellescape(session_name)))
             actions.close(prompt_bufnr)
             -- 重新打开选择器以刷新列表
             select_session_with_telescope(term)
@@ -296,8 +350,6 @@ M.activate_term = function(term)
     -- 在查找会话前先清理过期会话
     cleanup_inactive_sessions(term.name)
 
-    local sessions = get_sessions(term.name)
-
     -- 总是弹出 telescope 选择会话（包括新建）
     select_session_with_telescope(term)
     return
@@ -308,36 +360,39 @@ end
 -- 手动清理过期会话的公开接口
 M.cleanup_expired_sessions = function()
   local all_expired = {}
-  local now = tonumber(vim.fn.strftime("%s"))
 
-  -- 先收集所有类型的过期会话
   for _, term_name in ipairs(names) do
-    local sessions = get_sessions(term_name)
-    for _, s in ipairs(sessions) do
-      if not s.attached then
-        local inactive_seconds = now - s.activity
-        if inactive_seconds > INACTIVE_THRESHOLD_SECONDS then
-          table.insert(all_expired, {
-            name = s.name,
-            inactive_days = inactive_seconds / 86400,
-            term_name = term_name,
-          })
-        end
-      end
+    local sessions = get_expired_sessions(term_name)
+    for _, session in ipairs(sessions) do
+      session.term_name = term_name
+      table.insert(all_expired, session)
     end
   end
 
   if #all_expired == 0 then
-    vim.notify("没有需要清理的过期 tmux 会话", vim.log.levels.INFO)
+    vim.notify("没有需要清理的过期 zellij 会话", vim.log.levels.INFO)
     return
   end
 
-  -- 构建确认消息
-  local msg_lines = { "以下 tmux 会话已过期（超过 7 天未活跃）：", "" }
-  for _, s in ipairs(all_expired) do
-    table.insert(msg_lines, string.format("  [%s] %s (已空闲 %.1f 天)", s.term_name, s.name, s.inactive_days))
+  local title_lines = { "以下 zellij 会话已过期（创建时间超过 7 天）：" }
+  local scoped_sessions = {}
+  for _, session in ipairs(all_expired) do
+    table.insert(scoped_sessions, {
+      name = string.format("[%s] %s", session.term_name, session.name),
+      age_days = session.age_days,
+      meta = session.meta,
+      real_name = session.name,
+    })
+  end
+
+  local msg_lines = vim.deepcopy(title_lines)
+  table.insert(msg_lines, "")
+  for _, session in ipairs(scoped_sessions) do
+    local suffix = session.meta and string.format(" [%s]", session.meta) or ""
+    table.insert(msg_lines, string.format("  - %s%s (创建于 %.1f 天前)", session.name, suffix, session.age_days))
   end
   table.insert(msg_lines, "")
+  table.insert(msg_lines, "注意：zellij CLI 不提供最近活跃时间，这里按创建时间判断，可能包含仍在使用的会话。")
   table.insert(msg_lines, "是否清理这些会话？")
 
   local choice = vim.fn.confirm(table.concat(msg_lines, "\n"), "&Yes\n&No", 2)
@@ -345,11 +400,14 @@ M.cleanup_expired_sessions = function()
     return
   end
 
-  -- 执行清理
   local cleaned_count = 0
-  for _, s in ipairs(all_expired) do
-    vim.fn.system(string.format("tmux kill-session -t %s", s.name))
-    cleaned_count = cleaned_count + 1
+  for _, session in ipairs(scoped_sessions) do
+    vim.fn.system(string.format("zellij kill-session %s", vim.fn.shellescape(session.real_name)))
+    if vim.v.shell_error == 0 then
+      cleaned_count = cleaned_count + 1
+    else
+      vim.notify(string.format("清理失败: %s", session.real_name), vim.log.levels.WARN)
+    end
   end
   vim.notify(string.format("共清理了 %d 个过期会话", cleaned_count), vim.log.levels.INFO)
 end
