@@ -5,20 +5,45 @@ local Terminal = require("toggleterm.terminal").Terminal
 local names = { "agent", "git", "main" }
 local project_root = vim.fn.getcwd()
 local project_name = vim.fn.fnamemodify(project_root, ":t")
+local SESSION_NAME_MAX_LEN = 36
+local PROJECT_TOKEN_MAX_LEN = 12
+local BRANCH_TOKEN_MAX_LEN = 10
+local HASH_LEN = 6
+
+local function sanitize_session_part(value)
+  return tostring(value):gsub("[^%w_-]", "_")
+end
+
+local function trim_session_part(value, max_len)
+  if #value <= max_len then
+    return value
+  end
+  return value:sub(1, max_len)
+end
+
+local project_token = trim_session_part(sanitize_session_part(project_name), PROJECT_TOKEN_MAX_LEN)
 
 -- 获取当前 git 分支名（用于 session name）
 local function get_git_branch()
   local branch = vim.fn.systemlist("git branch --show-current 2>/dev/null")
   if vim.v.shell_error == 0 and #branch > 0 then
-    return branch[1]:gsub("[^%w_-]", "_")
+    return sanitize_session_part(branch[1])
   end
   return "main"
 end
 
--- 根据当前分支生成 session name 前缀
-local function get_session_prefix(term_name)
-  local branch = get_git_branch()
-  return string.format("%s_%s_%s", project_name, branch, term_name)
+-- zellij session name 最长支持 36 个字符，这里生成稳定且受限长度的名字。
+local function get_session_name(term_name)
+  local branch = trim_session_part(get_git_branch(), BRANCH_TOKEN_MAX_LEN)
+  local term = sanitize_session_part(term_name)
+  local fingerprint = vim.fn.sha256(table.concat({ project_root, get_git_branch(), term }, "|")):sub(1, HASH_LEN)
+  local session_name = string.format("%s_%s_%s_%s", project_token, branch, term, fingerprint)
+
+  if #session_name > SESSION_NAME_MAX_LEN then
+    error(string.format("Generated zellij session name is too long: %s", session_name))
+  end
+
+  return session_name
 end
 
 local function build_zellij_cmd(session_name)
@@ -72,7 +97,7 @@ for i = 1, 3 do
   local term_name = names[i]
   -- 使用闭包捕获初始的 session_prefix
   local function get_initial_prefix()
-    return get_session_prefix(term_name)
+    return get_session_name(term_name)
   end
   local initial_prefix = get_initial_prefix()
   local default_cmd = build_zellij_cmd(initial_prefix)
@@ -101,7 +126,7 @@ for i = 1, 3 do
     end,
     on_exit = function(term)
       -- 退出后重置为创建新会话的命令
-      term.cmd = build_zellij_cmd(get_session_prefix(term.name))
+      term.cmd = build_zellij_cmd(get_session_name(term.name))
       term.current_session = nil
     end,
   })
@@ -135,7 +160,9 @@ local function parse_zellij_created_seconds(meta)
 end
 
 local function get_sessions(term_name)
-  local project_name_escaped = project_name:gsub("%.", "_")
+  local project_name_escaped = sanitize_session_part(project_name)
+  local term_suffix = string.format("_%s$", sanitize_session_part(term_name))
+  local compact_term_suffix = string.format("_%s_[0-9a-f]+$", sanitize_session_part(term_name))
   local lines = vim.fn.systemlist("zellij list-sessions -n 2>/dev/null")
   if vim.v.shell_error ~= 0 then
     return {}
@@ -148,8 +175,9 @@ local function get_sessions(term_name)
       local name, meta = line:match("^(.-)%s+%[(.+)%]%s*$")
       name = name or vim.trim(line)
       if name ~= "" then
-        local is_project_session = name:find(string.format("^%s_", project_name_escaped))
-          and name:find(string.format("_%s$", term_name))
+        local is_legacy_project_session = name:find(string.format("^%s_", project_name_escaped)) and name:find(term_suffix)
+        local is_compact_project_session = name:find(string.format("^%s_", project_token)) and name:find(compact_term_suffix)
+        local is_project_session = is_legacy_project_session or is_compact_project_session
 
         if is_project_session then
           table.insert(sessions, {
@@ -298,7 +326,7 @@ local function select_session_with_telescope(term)
             term.cmd = build_zellij_cmd(session_map[choice])
             term.current_session = session_map[choice]
           else
-            term.cmd = build_zellij_cmd(get_session_prefix(term.name))
+            term.cmd = build_zellij_cmd(get_session_name(term.name))
             term.current_session = nil
           end
           open_or_focus(term)
