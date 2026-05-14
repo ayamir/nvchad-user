@@ -3,6 +3,7 @@ local M = {}
 local modules = {
   "commands.format",
   "commands.git",
+  "commands.lsp",
 }
 
 function M.setup()

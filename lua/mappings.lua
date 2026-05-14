@@ -99,7 +99,7 @@ local mappings = {
       :with_silent(),
 
     -- LSP 快速操作
-    ["n|<leader>lr"] = map_cr("LspStart"):with_noremap():with_silent():with_desc("Start LSP"),
+    ["n|<leader>lr"] = map_cr("LspRestart"):with_noremap():with_silent():with_desc("Restart LSP"),
     ["n|<leader>li"] = map_cr("LspInfo"):with_noremap():with_silent():with_desc("LSP info"),
   },
 
