@@ -9,6 +9,7 @@ local SESSION_NAME_MAX_LEN = 36
 local PROJECT_TOKEN_MAX_LEN = 12
 local BRANCH_TOKEN_MAX_LEN = 10
 local HASH_LEN = 6
+local TERM_TOKEN_MAX_LEN = SESSION_NAME_MAX_LEN - PROJECT_TOKEN_MAX_LEN - BRANCH_TOKEN_MAX_LEN - HASH_LEN - 3
 
 local function sanitize_session_part(value)
   return tostring(value):gsub("[^%w_-]", "_")
@@ -19,6 +20,10 @@ local function trim_session_part(value, max_len)
     return value
   end
   return value:sub(1, max_len)
+end
+
+local function get_term_key(term)
+  return term.term_key or term.name
 end
 
 local project_token = trim_session_part(sanitize_session_part(project_name), PROJECT_TOKEN_MAX_LEN)
@@ -35,15 +40,9 @@ end
 -- zellij session name 最长支持 36 个字符，这里生成稳定且受限长度的名字。
 local function get_session_name(term_name)
   local branch = trim_session_part(get_git_branch(), BRANCH_TOKEN_MAX_LEN)
-  local term = sanitize_session_part(term_name)
+  local term = trim_session_part(sanitize_session_part(term_name), TERM_TOKEN_MAX_LEN)
   local fingerprint = vim.fn.sha256(table.concat({ project_root, get_git_branch(), term }, "|")):sub(1, HASH_LEN)
-  local session_name = string.format("%s_%s_%s_%s", project_token, branch, term, fingerprint)
-
-  if #session_name > SESSION_NAME_MAX_LEN then
-    error(string.format("Generated zellij session name is too long: %s", session_name))
-  end
-
-  return session_name
+  return string.format("%s_%s_%s_%s", project_token, branch, term, fingerprint)
 end
 
 local function build_zellij_cmd(session_name)
@@ -106,6 +105,7 @@ for i = 1, 3 do
     id = i,
     direction = "float",
     name = term_name,
+    term_key = term_name,
     cmd = default_cmd,
     on_open = function(term)
       last_active = term.id
@@ -126,7 +126,7 @@ for i = 1, 3 do
     end,
     on_exit = function(term)
       -- 退出后重置为创建新会话的命令
-      term.cmd = build_zellij_cmd(get_session_name(term.name))
+      term.cmd = build_zellij_cmd(get_session_name(get_term_key(term)))
       term.current_session = nil
     end,
   })
@@ -161,8 +161,10 @@ end
 
 local function get_sessions(term_name)
   local project_name_escaped = sanitize_session_part(project_name)
-  local term_suffix = string.format("_%s$", sanitize_session_part(term_name))
-  local compact_term_suffix = string.format("_%s_[0-9a-f]+$", sanitize_session_part(term_name))
+  local sanitized_term_name = sanitize_session_part(term_name)
+  local compact_term_name = trim_session_part(sanitized_term_name, TERM_TOKEN_MAX_LEN)
+  local term_suffix = string.format("_%s$", sanitized_term_name)
+  local compact_term_suffix = string.format("_%s_[0-9a-f]+$", compact_term_name)
   local lines = vim.fn.systemlist("zellij list-sessions -n 2>/dev/null")
   if vim.v.shell_error ~= 0 then
     return {}
@@ -268,7 +270,8 @@ local function open_or_focus(term)
 end
 
 local function select_session_with_telescope(term)
-  local sessions = get_sessions(term.name)
+  local term_key = get_term_key(term)
+  local sessions = get_sessions(term_key)
   local options = { "New Session" }
   local session_map = {}
   for _, s in ipairs(sessions) do
@@ -295,7 +298,7 @@ local function select_session_with_telescope(term)
       },
       sorting_strategy = "ascending",
     }, {
-      prompt_title = string.format("Select zellij session for [%s]", term.name),
+      prompt_title = string.format("Select zellij session for [%s]", term_key),
       finder = finders.new_table({
         results = options,
       }),
@@ -326,7 +329,7 @@ local function select_session_with_telescope(term)
             term.cmd = build_zellij_cmd(session_map[choice])
             term.current_session = session_map[choice]
           else
-            term.cmd = build_zellij_cmd(get_session_name(term.name))
+            term.cmd = build_zellij_cmd(get_session_name(term_key))
             term.current_session = nil
           end
           open_or_focus(term)
@@ -378,7 +381,7 @@ M.activate_term = function(term)
   last_active = term.id
   if not term.job_id then
     -- 在查找会话前先清理过期会话
-    cleanup_inactive_sessions(term.name)
+    cleanup_inactive_sessions(get_term_key(term))
 
     -- 总是弹出 telescope 选择会话（包括新建）
     select_session_with_telescope(term)
