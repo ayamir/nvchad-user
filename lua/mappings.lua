@@ -246,6 +246,7 @@ local mappings = {
     ["n|<leader>gd"] = map_cr("DiffviewOpen"):with_noremap():with_silent():with_desc("Diffview open"),
     ["n|<leader>gD"] = map_cr("DiffviewClose"):with_noremap():with_silent():with_desc("Diffview close"),
     ["n|<leader>go"] = map_cr("OpenGitDiffFiles"):with_noremap():with_silent():with_desc("Open git diff files"),
+    ["n|<leader>gO"] = map_cr("OpenMasterDiffFiles"):with_noremap():with_silent():with_desc("Open branch diff files"),
 
     -- 代码变更操作
     ["n|<leader>gs"] = map_callback(function()
