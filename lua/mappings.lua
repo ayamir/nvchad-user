@@ -142,6 +142,17 @@ local mappings = {
 
   -- 编辑操作优化
   edit_operations = {
+    ["ni|<C-LeftMouse>"] = map_callback(function()
+        require("utils.file_ref").open_in_buffer_from_mouse()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Open file:line under mouse in buffer"),
+    ["t|<C-LeftMouse>"] = map_cmd([[<C-\><C-n><Cmd>lua require("utils.file_ref").open_in_buffer_from_mouse()<CR>]])
+      :with_noremap()
+      :with_silent()
+      :with_desc("Open file:line under mouse in buffer (terminal)"),
+
     -- 可视化模式增强
     ["v|J"] = map_cmd(":m '>+1<CR>gv=gv"):with_noremap():with_silent():with_desc("Move line down (visual)"),
     ["v|K"] = map_cmd(":m '<-2<CR>gv=gv"):with_noremap():with_silent():with_desc("Move line up (visual)"),

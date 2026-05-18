@@ -12,5 +12,6 @@ o.cursorcolumn = false
 o.wrap = true
 o.splitkeep = "cursor"
 o.equalalways = true
+o.mouse = "a"
 
 vim.opt.sessionoptions:remove("terminal")

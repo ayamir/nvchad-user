@@ -27,6 +27,23 @@ local NO_UNDO_PATTERNS = {
   "COMMIT_EDITMSG",
 }
 
+
+local function startinsert_in_terminal(event)
+  vim.schedule(function()
+    if vim.api.nvim_get_current_buf() ~= event.buf then
+      return
+    end
+
+    if vim.bo[event.buf].buftype ~= "terminal" then
+      return
+    end
+
+    if vim.fn.mode():sub(1, 1) ~= "t" then
+      vim.cmd("startinsert!")
+    end
+  end)
+end
+
 local function close_buffer_with_q(event)
   vim.bo[event.buf].buflisted = false
   vim.keymap.set("n", "q", "<Cmd>close<CR>", { buffer = event.buf, silent = true })
@@ -39,6 +56,11 @@ function M.setup()
     group = create_augroup("CloseWithQ"),
     pattern = CLOSE_WITH_Q_FILETYPES,
     callback = close_buffer_with_q,
+  })
+
+  create_autocmd({ "BufEnter", "WinEnter", "TermOpen" }, {
+    group = create_augroup("TerminalAutoInsert"),
+    callback = startinsert_in_terminal,
   })
 
   create_autocmd("BufWritePre", {
