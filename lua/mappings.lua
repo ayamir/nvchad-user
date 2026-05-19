@@ -495,7 +495,7 @@ local mappings = {
         if require("utils.helpers").is_nixos() or require("utils.helpers").is_archlinux() then
           require("sidekick.cli").toggle({ name = "claude", focus = true })
         else
-          require("sidekick.cli").toggle({ name = "aiden", focus = true })
+          require("sidekick.cli").toggle({ name = "codex", focus = true })
         end
       end)
       :with_noremap()
