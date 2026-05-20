@@ -11,6 +11,34 @@ local BRANCH_TOKEN_MAX_LEN = 10
 local HASH_LEN = 6
 local TERM_TOKEN_MAX_LEN = SESSION_NAME_MAX_LEN - PROJECT_TOKEN_MAX_LEN - BRANCH_TOKEN_MAX_LEN - HASH_LEN - 3
 
+local function get_zellij_socket_dir()
+  local existing = vim.env.ZELLIJ_SOCKET_DIR
+  if existing and existing ~= "" then
+    return existing
+  end
+
+  if vim.fn.has("unix") ~= 1 then
+    return nil
+  end
+
+  local uv = vim.uv or vim.loop
+  if uv and type(uv.os_get_passwd) == "function" then
+    local ok, passwd = pcall(uv.os_get_passwd)
+    if ok and passwd and passwd.uid ~= nil then
+      return string.format("/tmp/zellij-%s", tostring(passwd.uid))
+    end
+  end
+
+  local uid = vim.env.UID
+  if uid and uid ~= "" then
+    return string.format("/tmp/zellij-%s", uid)
+  end
+
+  return "/tmp/zellij"
+end
+
+local ZELLIJ_SOCKET_DIR = get_zellij_socket_dir()
+
 local function sanitize_session_part(value)
   return tostring(value):gsub("[^%w_-]", "_")
 end
@@ -24,6 +52,26 @@ end
 
 local function get_term_key(term)
   return term.term_key or term.name
+end
+
+local function ensure_zellij_socket_dir()
+  if not ZELLIJ_SOCKET_DIR or ZELLIJ_SOCKET_DIR == "" then
+    return
+  end
+
+  if vim.fn.isdirectory(ZELLIJ_SOCKET_DIR) == 0 then
+    vim.fn.mkdir(ZELLIJ_SOCKET_DIR, "p")
+  end
+end
+
+local function zellij_cli()
+  ensure_zellij_socket_dir()
+
+  if ZELLIJ_SOCKET_DIR and ZELLIJ_SOCKET_DIR ~= "" then
+    return string.format("env ZELLIJ_SOCKET_DIR=%s zellij", vim.fn.shellescape(ZELLIJ_SOCKET_DIR))
+  end
+
+  return "zellij"
 end
 
 local project_token = trim_session_part(sanitize_session_part(project_name), PROJECT_TOKEN_MAX_LEN)
@@ -47,8 +95,9 @@ end
 
 local function build_zellij_cmd(session_name)
   return string.format(
-    "cd %s && zellij attach -c %s",
+    "cd %s && %s attach -c %s",
     vim.fn.shellescape(project_root),
+    zellij_cli(),
     vim.fn.shellescape(session_name)
   )
 end
@@ -165,7 +214,7 @@ local function get_sessions(term_name)
   local compact_term_name = trim_session_part(sanitized_term_name, TERM_TOKEN_MAX_LEN)
   local term_suffix = string.format("_%s$", sanitized_term_name)
   local compact_term_suffix = string.format("_%s_[0-9a-f]+$", compact_term_name)
-  local lines = vim.fn.systemlist("zellij list-sessions -n 2>/dev/null")
+  local lines = vim.fn.systemlist(string.format("%s list-sessions -n 2>/dev/null", zellij_cli()))
   if vim.v.shell_error ~= 0 then
     return {}
   end
@@ -236,7 +285,7 @@ local function confirm_and_cleanup_sessions(expired_sessions, title_lines)
 
   local cleaned_count = 0
   for _, session in ipairs(expired_sessions) do
-    vim.fn.system(string.format("zellij kill-session %s", vim.fn.shellescape(session.name)))
+    vim.fn.system(string.format("%s kill-session %s", zellij_cli(), vim.fn.shellescape(session.name)))
     if vim.v.shell_error == 0 then
       cleaned_count = cleaned_count + 1
       vim.notify(string.format("已清理: %s", session.name), vim.log.levels.INFO)
@@ -311,7 +360,8 @@ local function select_session_with_telescope(term)
           end
           local session_name = session_map[choice]
           local preview_cmd = string.format(
-            "output=$(zellij -s %s action dump-screen --full 2>/dev/null); if [ -n \"$output\" ]; then printf '%%s\\n' \"$output\"; else echo 'No screen content available'; fi",
+            "output=$(%s -s %s action dump-screen --full 2>/dev/null); if [ -n \"$output\" ]; then printf '%%s\\n' \"$output\"; else echo 'No screen content available'; fi",
+            zellij_cli(),
             vim.fn.shellescape(session_name)
           )
           return { "bash", "-lc", preview_cmd }
@@ -343,7 +393,7 @@ local function select_session_with_telescope(term)
           local choice = selection[1]
           if choice ~= "New Session" then
             local session_name = session_map[choice]
-            vim.fn.system(string.format("zellij kill-session %s", vim.fn.shellescape(session_name)))
+            vim.fn.system(string.format("%s kill-session %s", zellij_cli(), vim.fn.shellescape(session_name)))
             actions.close(prompt_bufnr)
             -- 重新打开选择器以刷新列表
             select_session_with_telescope(term)
@@ -438,7 +488,7 @@ M.cleanup_expired_sessions = function()
 
   local cleaned_count = 0
   for _, session in ipairs(scoped_sessions) do
-    vim.fn.system(string.format("zellij kill-session %s", vim.fn.shellescape(session.real_name)))
+    vim.fn.system(string.format("%s kill-session %s", zellij_cli(), vim.fn.shellescape(session.real_name)))
     if vim.v.shell_error == 0 then
       cleaned_count = cleaned_count + 1
     else
