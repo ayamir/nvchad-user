@@ -208,7 +208,8 @@ return {
           vim.wo[preview_win].number = false
           vim.wo[preview_win].relativenumber = false
           vim.wo[preview_win].signcolumn = "no"
-          vim.wo[preview_win].wrap = false
+          vim.wo[preview_win].wrap = true
+          vim.wo[preview_win].linebreak = true
 
           update_preview()
           preview_autocmd = vim.api.nvim_create_autocmd("CursorMoved", {
