@@ -160,12 +160,12 @@ for i = 1, 3 do
       last_active = term.id
       vim.opt_local.winbar = ""
 
-      if helper.is_linux() then
-        -- 设置浮窗背景不透明，因为 linux 上已经配置整体透明
-        vim.api.nvim_set_option_value("winblend", 0, { scope = "local" })
-        vim.cmd("hi NormalFloat guibg=NONE")
-        vim.cmd("hi FloatBorder guibg=NONE")
-      end
+      -- if helper.is_linux() then
+      -- 设置浮窗背景不透明，因为 linux 上已经配置整体透明
+      vim.api.nvim_set_option_value("winblend", 0, { scope = "local" })
+      vim.cmd("hi NormalFloat guibg=NONE")
+      vim.cmd("hi FloatBorder guibg=NONE")
+      -- end
 
       vim.defer_fn(function()
         if term.job_id then
@@ -226,8 +226,10 @@ local function get_sessions(term_name)
       local name, meta = line:match("^(.-)%s+%[(.+)%]%s*$")
       name = name or vim.trim(line)
       if name ~= "" then
-        local is_legacy_project_session = name:find(string.format("^%s_", project_name_escaped)) and name:find(term_suffix)
-        local is_compact_project_session = name:find(string.format("^%s_", project_token)) and name:find(compact_term_suffix)
+        local is_legacy_project_session = name:find(string.format("^%s_", project_name_escaped))
+          and name:find(term_suffix)
+        local is_compact_project_session = name:find(string.format("^%s_", project_token))
+          and name:find(compact_term_suffix)
         local is_project_session = is_legacy_project_session or is_compact_project_session
 
         if is_project_session then
