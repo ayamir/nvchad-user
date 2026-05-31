@@ -102,9 +102,6 @@ local function build_zellij_cmd(session_name)
   )
 end
 
--- zellij CLI 不暴露 last activity，这里只能按创建时间判断“过期”。
-local INACTIVE_THRESHOLD_SECONDS = 7 * 24 * 60 * 60
-
 local TIME_UNIT_SECONDS = {
   s = 1,
   sec = 1,
@@ -245,67 +242,6 @@ local function get_sessions(term_name)
   return sessions
 end
 
-local function get_expired_sessions(term_name)
-  local sessions = get_sessions(term_name)
-  local expired_sessions = {}
-
-  for _, session in ipairs(sessions) do
-    if session.created_seconds and session.created_seconds > INACTIVE_THRESHOLD_SECONDS then
-      table.insert(expired_sessions, {
-        name = session.name,
-        age_days = session.created_seconds / 86400,
-        meta = session.meta,
-      })
-    end
-  end
-
-  return expired_sessions
-end
-
-local function confirm_and_cleanup_sessions(expired_sessions, title_lines)
-  if #expired_sessions == 0 then
-    return 0
-  end
-
-  local msg_lines = vim.deepcopy(title_lines)
-  table.insert(msg_lines, "")
-  for _, session in ipairs(expired_sessions) do
-    local suffix = session.meta and string.format(" [%s]", session.meta) or ""
-    table.insert(msg_lines, string.format("  - %s%s (创建于 %.1f 天前)", session.name, suffix, session.age_days))
-  end
-  table.insert(msg_lines, "")
-  table.insert(
-    msg_lines,
-    "注意：zellij CLI 不提供最近活跃时间，这里按创建时间判断，可能包含仍在使用的会话。"
-  )
-  table.insert(msg_lines, "是否清理这些会话？")
-
-  local choice = vim.fn.confirm(table.concat(msg_lines, "\n"), "&Yes\n&No", 2)
-  if choice ~= 1 then
-    return 0
-  end
-
-  local cleaned_count = 0
-  for _, session in ipairs(expired_sessions) do
-    vim.fn.system(string.format("%s kill-session %s", zellij_cli(), vim.fn.shellescape(session.name)))
-    if vim.v.shell_error == 0 then
-      cleaned_count = cleaned_count + 1
-      vim.notify(string.format("已清理: %s", session.name), vim.log.levels.INFO)
-    else
-      vim.notify(string.format("清理失败: %s", session.name), vim.log.levels.WARN)
-    end
-  end
-
-  return cleaned_count
-end
-
-local function cleanup_inactive_sessions(term_name)
-  local expired_sessions = get_expired_sessions(term_name)
-  return confirm_and_cleanup_sessions(expired_sessions, {
-    "以下 zellij 会话已过期（创建时间超过 7 天）：",
-  })
-end
-
 local function open_or_focus(term)
   -- 优先使用 open：不会在已打开时误关掉
   if type(term.open) == "function" then
@@ -432,9 +368,6 @@ end
 M.activate_term = function(term)
   last_active = term.id
   if not term.job_id then
-    -- 在查找会话前先清理过期会话
-    cleanup_inactive_sessions(get_term_key(term))
-
     -- 总是弹出 telescope 选择会话（包括新建）
     select_session_with_telescope(term)
     return
@@ -443,62 +376,6 @@ M.activate_term = function(term)
 end
 
 -- 手动清理过期会话的公开接口
-M.cleanup_expired_sessions = function()
-  local all_expired = {}
-
-  for _, term_name in ipairs(names) do
-    local sessions = get_expired_sessions(term_name)
-    for _, session in ipairs(sessions) do
-      session.term_name = term_name
-      table.insert(all_expired, session)
-    end
-  end
-
-  if #all_expired == 0 then
-    vim.notify("没有需要清理的过期 zellij 会话", vim.log.levels.INFO)
-    return
-  end
-
-  local title_lines = { "以下 zellij 会话已过期（创建时间超过 7 天）：" }
-  local scoped_sessions = {}
-  for _, session in ipairs(all_expired) do
-    table.insert(scoped_sessions, {
-      name = string.format("[%s] %s", session.term_name, session.name),
-      age_days = session.age_days,
-      meta = session.meta,
-      real_name = session.name,
-    })
-  end
-
-  local msg_lines = vim.deepcopy(title_lines)
-  table.insert(msg_lines, "")
-  for _, session in ipairs(scoped_sessions) do
-    local suffix = session.meta and string.format(" [%s]", session.meta) or ""
-    table.insert(msg_lines, string.format("  - %s%s (创建于 %.1f 天前)", session.name, suffix, session.age_days))
-  end
-  table.insert(msg_lines, "")
-  table.insert(
-    msg_lines,
-    "注意：zellij CLI 不提供最近活跃时间，这里按创建时间判断，可能包含仍在使用的会话。"
-  )
-  table.insert(msg_lines, "是否清理这些会话？")
-
-  local choice = vim.fn.confirm(table.concat(msg_lines, "\n"), "&Yes\n&No", 2)
-  if choice ~= 1 then
-    return
-  end
-
-  local cleaned_count = 0
-  for _, session in ipairs(scoped_sessions) do
-    vim.fn.system(string.format("%s kill-session %s", zellij_cli(), vim.fn.shellescape(session.real_name)))
-    if vim.v.shell_error == 0 then
-      cleaned_count = cleaned_count + 1
-    else
-      vim.notify(string.format("清理失败: %s", session.real_name), vim.log.levels.WARN)
-    end
-  end
-  vim.notify(string.format("共清理了 %d 个过期会话", cleaned_count), vim.log.levels.INFO)
-end
 
 M.any_term_open = function()
   for _, t in ipairs(terms) do
