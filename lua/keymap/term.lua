@@ -93,6 +93,22 @@ local function get_session_name(term_name)
   return string.format("%s_%s_%s_%s", project_token, branch, term, fingerprint)
 end
 
+local function get_new_session_name(term_name)
+  local branch = trim_session_part(get_git_branch(), BRANCH_TOKEN_MAX_LEN)
+  local term = trim_session_part(sanitize_session_part(term_name), TERM_TOKEN_MAX_LEN)
+  local uv = vim.uv or vim.loop
+  local unique_seed = table.concat({
+    project_root,
+    get_git_branch(),
+    term,
+    tostring(vim.fn.getpid()),
+    tostring(os.time()),
+    uv and type(uv.hrtime) == "function" and tostring(uv.hrtime()) or "",
+  }, "|")
+  local fingerprint = vim.fn.sha256(unique_seed):sub(1, HASH_LEN)
+  return string.format("%s_%s_%s_%s", project_token, branch, term, fingerprint)
+end
+
 local function build_zellij_cmd(session_name)
   return string.format(
     "cd %s && %s attach -c %s",
@@ -157,12 +173,12 @@ for i = 1, 3 do
       last_active = term.id
       vim.opt_local.winbar = ""
 
-      -- if helper.is_linux() then
-      -- 设置浮窗背景不透明，因为 linux 上已经配置整体透明
-      vim.api.nvim_set_option_value("winblend", 0, { scope = "local" })
-      vim.cmd("hi NormalFloat guibg=NONE")
-      vim.cmd("hi FloatBorder guibg=NONE")
-      -- end
+      if helper.is_linux() then
+        -- 设置浮窗背景不透明，因为 linux 上已经配置整体透明
+        vim.api.nvim_set_option_value("winblend", 0, { scope = "local" })
+        vim.cmd("hi NormalFloat guibg=NONE")
+        vim.cmd("hi FloatBorder guibg=NONE")
+      end
 
       vim.defer_fn(function()
         if term.job_id then
@@ -317,7 +333,7 @@ local function select_session_with_telescope(term)
             term.cmd = build_zellij_cmd(session_map[choice])
             term.current_session = session_map[choice]
           else
-            term.cmd = build_zellij_cmd(get_session_name(term_key))
+            term.cmd = build_zellij_cmd(get_new_session_name(term_key))
             term.current_session = nil
           end
           open_or_focus(term)
