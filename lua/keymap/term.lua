@@ -173,7 +173,7 @@ for i = 1, 3 do
       last_active = term.id
       vim.opt_local.winbar = ""
 
-      if helper.is_linux() then
+      if not helper.is_linux() then
         -- 设置浮窗背景不透明，因为 linux 上已经配置整体透明
         vim.api.nvim_set_option_value("winblend", 0, { scope = "local" })
         vim.cmd("hi NormalFloat guibg=NONE")
