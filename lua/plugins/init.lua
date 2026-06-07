@@ -106,7 +106,7 @@ return {
 
   {
     "stevearc/dressing.nvim",
-    lazy = false,
+    event = "VeryLazy",
     opts = {
       select = {
         backend = { "telescope", "builtin" },
@@ -823,7 +823,6 @@ return {
       require("fff.download").download_or_build_binary()
     end,
     version = "0.5.2",
-    lazy = false,
     keys = {
       {
         "ff", -- try it if you didn't it is a banger keybinding for a picker
