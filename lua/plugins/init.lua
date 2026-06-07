@@ -262,30 +262,30 @@ return {
     },
   },
 
-  {
-    "karb94/neoscroll.nvim",
-    lazy = true,
-    event = { "BufReadPost" },
-    opts = {
-      hide_cursor = true,
-      stop_eof = true,
-      use_local_scrolloff = false,
-      respect_scrolloff = false,
-      cursor_scrolls_alone = true,
-      mappings = {
-        "<C-u>",
-        "<C-d>",
-        "<C-b>",
-        "<C-f>",
-        "<C-y>",
-        "<C-e>",
-        "zt",
-        "zz",
-        "zb",
-      },
-      easing_function = "quadratic",
-    },
-  },
+  -- {
+  --   "karb94/neoscroll.nvim",
+  --   lazy = true,
+  --   event = { "BufReadPost" },
+  --   opts = {
+  --     hide_cursor = true,
+  --     stop_eof = true,
+  --     use_local_scrolloff = false,
+  --     respect_scrolloff = false,
+  --     cursor_scrolls_alone = true,
+  --     mappings = {
+  --       "<C-u>",
+  --       "<C-d>",
+  --       "<C-b>",
+  --       "<C-f>",
+  --       "<C-y>",
+  --       "<C-e>",
+  --       "zt",
+  --       "zz",
+  --       "zb",
+  --     },
+  --     easing_function = "quadratic",
+  --   },
+  -- },
 
   -- tools
   {
@@ -583,8 +583,8 @@ return {
     config = function()
       local notify = require("notify")
       notify.setup({
-        fps = 120,
-        stages = "slide",
+        fps = 30,
+        stages = "static",
         timeout = 1000,
         render = "default",
         minimum_width = 50,
