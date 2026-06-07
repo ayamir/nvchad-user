@@ -1,0 +1,113 @@
+# Optional companion for helix/config.toml.
+#
+# Source mapping:
+# - lua/configs/lspconfig.lua: gopls, jsonls, zuban, nixd, plus Mason-managed LSPs
+# - lua/configs/conform.lua: stylua, gofumpt/goimports/gofmt, rustfmt,
+#   prettier, ruff/black/isort, shfmt, nixfmt
+#
+# Install as: ~/.config/helix/languages.toml
+# All language server and formatter commands must be available in PATH.
+
+[language-server.gopls]
+command = "gopls"
+args = ["-remote.debug=:0", "-remote=auto"]
+
+[language-server.gopls.config.gopls]
+staticcheck = false
+usePlaceholders = false
+completeUnimported = true
+symbolMatcher = "Fuzzy"
+buildFlags = ["-tags", "integration"]
+directoryFilters = ["-.git", "-node_modules", "-vendor"]
+
+[language-server.gopls.config.gopls.analyses]
+efaceany = false
+unusedparams = false
+
+[language-server.gopls.config.gopls.codelenses]
+generate = false
+gc_details = false
+test = false
+tidy = false
+vendor = false
+regenerate_cgo = false
+upgrade_dependency = false
+
+[language-server.zuban]
+command = "zuban"
+args = ["server"]
+
+[language-server.nixd]
+command = "nixd"
+
+[language-server.nixd.config.nixd.nixpkgs]
+expr = 'import (builtins.getFlake "path:/etc/nixos").inputs.nixpkgs { system = "x86_64-linux"; }'
+
+[language-server.nixd.config.nixd.options.nixos]
+expr = '(builtins.getFlake "path:/etc/nixos").nixosConfigurations.nixos.options'
+
+[language-server.nixd.config.nixd.options.home_manager]
+expr = '(builtins.getFlake "path:/etc/nixos").homeConfigurations.ayamir.options'
+
+[[language]]
+name = "go"
+language-servers = ["gopls"]
+auto-format = true
+formatter = { command = "gofumpt" }
+
+[[language]]
+name = "gomod"
+language-servers = ["gopls"]
+auto-format = true
+formatter = { command = "gofmt" }
+
+[[language]]
+name = "gotmpl"
+language-servers = ["gopls"]
+auto-format = true
+
+[[language]]
+name = "json"
+auto-format = true
+formatter = { command = "prettier", args = ["--parser", "json"] }
+
+[[language]]
+name = "python"
+language-servers = ["zuban"]
+auto-format = true
+# Conform currently runs ruff, black and isort. Helix formatters are a single
+# command, so black is the conservative stdin formatter here. Use ruff through
+# LSP/code actions or replace this with a small wrapper script if you want the
+# exact chain.
+formatter = { command = "black", args = ["--quiet", "-"] }
+
+[[language]]
+name = "nix"
+language-servers = ["nixd"]
+auto-format = true
+formatter = { command = "nixfmt" }
+
+[[language]]
+name = "lua"
+auto-format = true
+formatter = { command = "stylua", args = ["-"] }
+
+[[language]]
+name = "rust"
+auto-format = true
+formatter = { command = "rustfmt", args = ["--edition", "2021"] }
+
+[[language]]
+name = "bash"
+auto-format = true
+formatter = { command = "shfmt", args = ["-i", "2"] }
+
+[[language]]
+name = "c"
+language-servers = ["clangd"]
+auto-format = true
+
+[[language]]
+name = "cpp"
+language-servers = ["clangd"]
+auto-format = true

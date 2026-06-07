@@ -1,0 +1,271 @@
+# Helix equivalent for this NvChad setup.
+#
+# Source mapping:
+# - NvChad leader: space
+# - NvChad theme: catppuccin + catppuccin-latte toggle
+# - NvChad file tree: nvim-tree behind Edgy, toggled with C-n
+# - NvChad fuzzy layer: fzf-lua first, Telescope for frecency/resume/notify
+#
+# Install as: ~/.config/helix/config.toml
+# Reload in Helix with: :config-reload
+
+# Helix 25.07.x expects a single top-level theme string. If you are on a
+# newer build that supports automatic light/dark theme tables, you can use:
+# [theme]
+# dark = "catppuccin_mocha"
+# light = "catppuccin_latte"
+# fallback = "catppuccin_mocha"
+theme = "catppuccin_mocha"
+
+[editor]
+line-number = "relative"
+mouse = true
+cursorline = true
+bufferline = "multiple"
+color-modes = true
+true-color = true
+undercurl = true
+popup-border = "all"
+auto-completion = true
+auto-format = true
+completion-trigger-len = 1
+idle-timeout = 250
+completion-timeout = 50
+preview-completion-insert = true
+auto-info = true
+text-width = 120
+gutters = ["diagnostics", "spacer", "line-numbers", "spacer", "diff"]
+
+[editor.statusline]
+left = ["mode", "spinner", "file-name", "read-only-indicator", "file-modification-indicator"]
+center = []
+right = ["diagnostics", "workspace-diagnostics", "version-control", "selections", "position", "file-type", "file-encoding"]
+separator = "|"
+mode.normal = "NORMAL"
+mode.insert = "INSERT"
+mode.select = "SELECT"
+diagnostics = ["warning", "error"]
+workspace-diagnostics = ["warning", "error"]
+
+[editor.lsp]
+enable = true
+display-messages = true
+display-progress-messages = true
+auto-signature-help = true
+display-inlay-hints = true
+display-color-swatches = true
+display-signature-help-docs = true
+snippets = true
+goto-reference-include-declaration = true
+
+[editor.cursor-shape]
+normal = "block"
+insert = "bar"
+select = "underline"
+
+[editor.search]
+smart-case = true
+wrap-around = true
+
+[editor.file-picker]
+# Close to fzf-lua's fd command:
+# fd --type f --hidden --follow --exclude .git --strip-cwd-prefix
+hidden = false
+follow-symlinks = true
+deduplicate-links = true
+parents = true
+ignore = true
+git-ignore = true
+git-global = true
+git-exclude = true
+
+[editor.indent-guides]
+render = true
+character = "|"
+skip-levels = 1
+
+[editor.soft-wrap]
+enable = true
+max-wrap = 25
+max-indent-retain = 40
+wrap-indicator = ""
+
+[editor.inline-diagnostics]
+cursor-line = "warning"
+other-lines = "disable"
+prefix-len = 1
+max-wrap = 20
+max-diagnostics = 10
+
+[keys.normal]
+# File tree / explorer. NvChad currently toggles the left Edgy/NvimTree area with C-n.
+C-n = "file_explorer"
+
+# Buffer management, matching the NvChad Alt-i/o/q rhythm where Helix can.
+A-i = ":buffer-next"
+A-o = ":buffer-previous"
+A-q = ":buffer-close"
+"A-S-q" = ":buffer-close-all"
+
+# Window navigation, matching the current C-h/j/k/l mental model.
+C-h = "jump_view_left"
+C-j = "jump_view_down"
+C-k = "jump_view_up"
+C-l = "jump_view_right"
+
+# Formatting, close to A-S-f in the Neovim config.
+"A-S-f" = ":format"
+
+# Keep useful Vim-like line end operations from the NvChad layer.
+Y = ["extend_to_line_end", "yank"]
+D = ["extend_to_line_end", "delete_selection"]
+
+[keys.select]
+C-n = "file_explorer"
+A-q = ":buffer-close"
+"A-S-q" = ":buffer-close-all"
+C-h = "jump_view_left"
+C-j = "jump_view_down"
+C-k = "jump_view_up"
+C-l = "jump_view_right"
+"A-S-f" = ":format"
+
+[keys.normal.g]
+# LSP mappings kept close to lua/configs/lspconfig.lua where Helix has native equivalents.
+a = "code_action"
+d = "goto_definition"
+D = "goto_declaration"
+r = "rename_symbol"
+R = "rename_symbol"
+h = "goto_reference"
+m = "goto_implementation"
+y = "goto_type_definition"
+"[" = "goto_prev_diag"
+"]" = "goto_next_diag"
+
+[keys.select.g]
+a = "code_action"
+d = "goto_definition"
+D = "goto_declaration"
+r = "rename_symbol"
+R = "rename_symbol"
+h = "goto_reference"
+m = "goto_implementation"
+y = "goto_type_definition"
+"[" = "goto_prev_diag"
+"]" = "goto_next_diag"
+
+[keys.insert]
+# Optional, but useful if your terminal sends these cleanly.
+C-h = "delete_char_backward"
+C-l = "completion"
+"A-S-f" = "normal_mode"
+
+[keys.normal.space]
+# File tree. Helix's built-in explorer is closer to NvimTree than the file picker.
+e = "file_explorer"
+E = "file_explorer_in_current_buffer_directory"
+
+# Common Helix defaults kept available.
+"?" = "command_palette"
+k = "hover"
+a = "code_action"
+r = "rename_symbol"
+
+[keys.select.space]
+e = "file_explorer"
+E = "file_explorer_in_current_buffer_directory"
+"?" = "command_palette"
+k = "hover"
+a = "code_action"
+r = "rename_symbol"
+
+[keys.normal.space.f]
+# NvChad <leader>ff: fzf-lua git_files/files.
+# Helix file_picker is git-aware through [editor.file-picker].
+f = "file_picker"
+F = "file_picker_in_current_directory"
+
+# NvChad <leader>fw: FzfLua live_grep.
+w = "global_search"
+
+# NvChad <leader>fb: FzfLua buffers.
+b = "buffer_picker"
+
+# NvChad <leader>fr / Telescope resume.
+r = "last_picker"
+R = "last_picker"
+
+# NvChad <leader>fs: grep cword/selection.
+# Helix has selection search, not a workspace grep seeded from selection.
+s = "search_selection_detect_word_boundaries"
+
+# NvChad <leader>fz: current-buffer fuzzy lines. Helix has no direct built-in
+# equivalent; document symbols are the closest native picker for code buffers.
+z = "symbol_picker"
+
+# NvChad <leader>fc frecency and <leader>fo oldfiles have no native Helix
+# equivalent without an external picker/plugin.
+
+[keys.select.space.f]
+f = "file_picker"
+F = "file_picker_in_current_directory"
+w = "global_search"
+b = "buffer_picker"
+r = "last_picker"
+R = "last_picker"
+s = "search_selection_detect_word_boundaries"
+z = "symbol_picker"
+
+[keys.normal.space.g]
+# Git-ish picker equivalents.
+# NvChad <leader>gt: FzfLua git_status. Helix's closest native picker is
+# changed_file_picker, backed by the workspace VCS status.
+t = "changed_file_picker"
+s = "changed_file_picker"
+
+# Built-in diff hunk movement.
+j = "goto_next_change"
+k = "goto_prev_change"
+r = ":reset-diff-change"
+
+[keys.select.space.g]
+t = "changed_file_picker"
+s = "changed_file_picker"
+j = "goto_next_change"
+k = "goto_prev_change"
+r = ":reset-diff-change"
+
+[keys.normal.space.l]
+# Close to <leader>lr / <leader>li in the Neovim config.
+r = ":lsp-restart"
+i = ":lsp-workspace-command"
+d = "diagnostics_picker"
+D = "workspace_diagnostics_picker"
+s = "symbol_picker"
+S = "workspace_symbol_picker"
+
+[keys.select.space.l]
+r = ":lsp-restart"
+i = ":lsp-workspace-command"
+d = "diagnostics_picker"
+D = "workspace_diagnostics_picker"
+s = "symbol_picker"
+S = "workspace_symbol_picker"
+
+[keys.normal.space.b]
+# Buffer sub-mode, for when Alt bindings are intercepted by terminal/tmux.
+n = ":buffer-next"
+p = ":buffer-previous"
+b = "buffer_picker"
+d = ":buffer-close"
+D = ":buffer-close-all"
+o = ":buffer-close-others"
+
+[keys.select.space.b]
+n = ":buffer-next"
+p = ":buffer-previous"
+b = "buffer_picker"
+d = ":buffer-close"
+D = ":buffer-close-all"
+o = ":buffer-close-others"
