@@ -89,6 +89,7 @@ formatter = { command = "nixfmt" }
 
 [[language]]
 name = "lua"
+language-servers = ["lua-language-server"]
 auto-format = true
 formatter = { command = "stylua", args = ["-"] }
 
