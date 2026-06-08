@@ -32,6 +32,10 @@ return {
     opts = function(_, opts)
       opts = opts or {}
 
+      opts.enabled = function()
+        return vim.bo.filetype ~= "DressingInput"
+      end
+
       opts.keymap = opts.keymap or {}
       opts.keymap["<Tab>"] = {
         "select_next",
