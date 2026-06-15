@@ -16,13 +16,17 @@ local function get_git_root()
   return vim.trim(output[1])
 end
 
+local function should_include_file(rel_path)
+  return not (rel_path:match("_test%.go$") or rel_path:match("%.bazel$"))
+end
+
 local function collect_abs_files(git_root, paths)
   local files = {}
   local seen = {}
 
   for _, rel_path in ipairs(paths) do
     local normalized = vim.trim(rel_path)
-    if normalized ~= "" then
+    if normalized ~= "" and should_include_file(normalized) then
       local abs_path = git_root .. "/" .. normalized
       if vim.fn.filereadable(abs_path) == 1 and not seen[abs_path] then
         seen[abs_path] = true
@@ -41,10 +45,10 @@ local function get_worktree_diff_files()
   end
 
   local git_root_escaped = vim.fn.shellescape(git_root)
-  local tracked_files = git_systemlist(string.format("git -C %s diff --name-only HEAD -- 2>/dev/null", git_root_escaped))
-  local untracked_files = git_systemlist(
-    string.format("git -C %s ls-files --others --exclude-standard 2>/dev/null", git_root_escaped)
-  )
+  local tracked_files =
+    git_systemlist(string.format("git -C %s diff --name-only HEAD -- 2>/dev/null", git_root_escaped))
+  local untracked_files =
+    git_systemlist(string.format("git -C %s ls-files --others --exclude-standard 2>/dev/null", git_root_escaped))
 
   return collect_abs_files(git_root, vim.list_extend(tracked_files, untracked_files)), nil
 end
