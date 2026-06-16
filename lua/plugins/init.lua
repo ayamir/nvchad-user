@@ -383,8 +383,8 @@ return {
 
   {
     "ayamir/garbage-day.nvim",
-    -- enabled = false,
-    enabled = vim.fn.has("unix") == 0 or vim.fn.has("mac") == 1,
+    enabled = false,
+    -- enabled = vim.fn.has("unix") == 0 or vim.fn.has("mac") == 1,
     lazy = true,
     event = "LspAttach",
     config = function()
