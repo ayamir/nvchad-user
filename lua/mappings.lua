@@ -427,44 +427,89 @@ local mappings = {
   -- 插件映射：搜索工具
   plugin_search = {
     ["v|<leader>fs"] = map_callback(function()
-        local text = get_visual_selection()
-        if not text then
-          return
-        end
-        require("fzf-lua").grep({ search = text })
+        Snacks.picker.grep_word()
       end)
       :with_noremap()
       :with_silent()
       :with_desc("Grep selection"),
-    ["n|<leader>fs"] = map_cr("FzfLua grep_cword"):with_noremap():with_silent():with_desc("Grep cword"),
-    ["n|<leader>fr"] = map_cr("FzfLua resume"):with_noremap():with_silent():with_desc("Resume FzfLua"),
-    ["n|<leader>fR"] = map_cr("Telescope resume"):with_noremap():with_silent():with_desc("Resume Telescope"),
-    ["n|<leader>fm"] = map_cr("Telescope notify"):with_noremap():with_silent():with_desc("Notify history"),
+    ["n|<leader>fs"] = map_callback(function()
+        Snacks.picker.grep_word()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Grep cword"),
+    ["n|<leader>fr"] = map_callback(function()
+        Snacks.picker.resume()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Resume picker"),
+    ["n|<leader>fm"] = map_callback(function()
+        Snacks.notifier.show_history()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Notify history"),
     ["n|<leader>s"] = map_cr("GrugFar"):with_noremap():with_silent():with_desc("Grep/replace (GrugFar)"),
-    -- 覆盖 NvChad 内置 telescope mapping
-    -- 在 git 仓库里用 git_files（极快，读 git 索引），否则 fallback 到 files
     ["n|<leader>ff"] = map_callback(function()
         local ok = vim.fn.system("git rev-parse --is-inside-work-tree 2>/dev/null")
         if vim.trim(ok) == "true" then
-          require("fzf-lua").git_files()
+          Snacks.picker.git_files()
         else
-          require("fzf-lua").files()
+          Snacks.picker.files()
         end
       end)
       :with_noremap()
       :with_silent()
       :with_desc("Find files (git_files / files)"),
-    ["n|<leader>fw"] = map_cr("FzfLua live_grep"):with_noremap():with_silent():with_desc("Live grep"),
-    ["n|<leader>fb"] = map_cr("FzfLua buffers"):with_noremap():with_silent():with_desc("Find buffers"),
-    ["n|<leader>fo"] = map_cr("FzfLua oldfiles"):with_noremap():with_silent():with_desc("Find oldfiles"),
-    ["n|<leader>fc"] = map_cr("Telescope frecency workspace=CWD")
+    ["n|<leader>fw"] = map_callback(function()
+        Snacks.picker.grep()
+      end)
       :with_noremap()
       :with_silent()
-      :with_desc("Find files (frecency)"),
-    ["n|<leader>fz"] = map_cr("FzfLua blines"):with_noremap():with_silent():with_desc("Fuzzy current buffer"),
-    ["n|<leader>cm"] = map_cr("FzfLua git_commits"):with_noremap():with_silent():with_desc("Git commits"),
-    ["n|<leader>gt"] = map_cr("FzfLua git_status"):with_noremap():with_silent():with_desc("Git status"),
-    ["n|<leader>ma"] = map_cr("FzfLua marks"):with_noremap():with_silent():with_desc("Find marks"),
+      :with_desc("Live grep"),
+    ["n|<leader>fb"] = map_callback(function()
+        Snacks.picker.buffers()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Find buffers"),
+    ["n|<leader>fo"] = map_callback(function()
+        Snacks.picker.recent()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Find oldfiles"),
+    ["n|<leader>fc"] = map_callback(function()
+        Snacks.picker.smart()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Find files (smart)"),
+    ["n|<leader>fz"] = map_callback(function()
+        Snacks.picker.lines()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Fuzzy current buffer"),
+    ["n|<leader>cm"] = map_callback(function()
+        Snacks.picker.git_log()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Git commits"),
+    ["n|<leader>gt"] = map_callback(function()
+        Snacks.picker.git_status()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Git status"),
+    ["n|<leader>ma"] = map_callback(function()
+        Snacks.picker.marks()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Find marks"),
   },
 
   plugin_pack = {

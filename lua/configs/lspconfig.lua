@@ -2,8 +2,6 @@ require("nvchad.configs.lspconfig").defaults()
 
 local map = vim.keymap.set
 local capabilities = vim.lsp.protocol.make_client_capabilities()
-local prompt_position = require("telescope.config").values.layout_config.horizontal.prompt_position
-local fzf_opts = { ["--layout"] = prompt_position == "top" and "reverse" or "default" }
 
 capabilities.textDocument.completion.completionItem = {
   documentationFormat = { "markdown", "plaintext" },
@@ -42,8 +40,8 @@ local on_attach = function(_, bufnr)
   map("n", "ga", ":Lspsaga code_action<CR>", opts())
   map("n", "go", ":Trouble symbols toggle win.position=right<CR>", opts())
   map("n", "gp", function()
-    require("fzf-lua").lsp_document_symbols({ fzf_opts = fzf_opts })
-  end)
+    Snacks.picker.lsp_symbols()
+  end, opts())
   map("n", "g[", ":Lspsaga diagnostic_jump_prev<CR>", opts())
   map("n", "g]", ":Lspsaga diagnostic_jump_next<CR>", opts())
   map("n", "gr", ":Lspsaga rename<CR>", opts())
@@ -52,10 +50,10 @@ local on_attach = function(_, bufnr)
   map("n", "gD", ":Lspsaga goto_definition<CR>", opts())
   map("n", "gt", ":Trouble diagnostics toggle<CR>", opts())
   map("n", "gh", function()
-    require("fzf-lua").lsp_references({ fzf_opts = fzf_opts })
+    Snacks.picker.lsp_references()
   end, opts())
   map("n", "gm", function()
-    require("fzf-lua").lsp_implementations({ fzf_opts = fzf_opts })
+    Snacks.picker.lsp_implementations()
   end, opts())
   map("n", "gy", function()
     require("symbol-usage").refresh()
