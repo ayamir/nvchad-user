@@ -10,6 +10,7 @@ return {
 
   { "nvim-telescope/telescope.nvim", enabled = false },
   { "nvim-tree/nvim-tree.lua", enabled = false },
+  { "lukas-reineke/indent-blankline.nvim", enabled = false },
 
   {
     "stevearc/conform.nvim",
@@ -146,7 +147,7 @@ return {
       follow_cwd = true,
       use_git_branch = true,
       should_save = function()
-        return vim.bo.filetype == "Nvdash" and false or true
+        return vim.bo.filetype ~= "snacks_dashboard"
       end,
     },
   },

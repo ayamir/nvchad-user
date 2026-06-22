@@ -44,10 +44,8 @@ M.base46 = {
     "hop",
     "bookmarks",
     "blink",
-    "blankline",
     "treesitter",
     "dap",
-    "blankline",
     "edgy",
     "grug_far",
     "mason",
@@ -59,21 +57,17 @@ M.base46 = {
     "git",
     "devicons",
     "todo",
-    "telescope",
     "tiny-inline-diagnostic",
   },
 }
 
-M.nvdash = { load_on_startup = true }
+M.nvdash = { load_on_startup = false }
 M.ui = {
   statusline = {
     order = { "mode", "file", "git", "%=", "lsp_msg", "%=", "diagnostics", "lsp", "cwd", "cursor" },
   },
   tabufline = {
     lazyload = false,
-  },
-  telescope = {
-    style = "bordered",
   },
 }
 M.term = {
