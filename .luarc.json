@@ -1,4 +1,7 @@
 {
   "diagnostics.disable": ["different-requires", "undefined-field"],
-  "workspace.checkThirdParty": false
+  "workspace.checkThirdParty": false,
+    "diagnostics.globals": [
+        "Snacks"
+    ]
 }
