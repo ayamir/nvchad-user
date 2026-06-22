@@ -8,6 +8,8 @@ return {
     opts = require("configs.snacks"),
   },
 
+  { "nvim-telescope/telescope.nvim", enabled = false },
+
   {
     "stevearc/conform.nvim",
     -- event = 'BufWritePre', -- uncomment for format on save
@@ -74,41 +76,6 @@ return {
       opts.sources.providers = opts.sources.providers or {}
 
       return opts
-    end,
-  },
-
-  {
-    "nvim-telescope/telescope.nvim",
-    dependencies = {
-      {
-        "nvim-telescope/telescope-fzf-native.nvim",
-        build = "make",
-      },
-      {
-        "nvim-telescope/telescope-frecency.nvim",
-        dependencies = { "kkharji/sqlite.lua" },
-      },
-    },
-    opts = function()
-      return {
-        defaults = require("telescope.themes").get_ivy({
-          sorting_strategy = "ascending",
-        }),
-        extensions = {
-          fzf = {
-            fuzzy = true,
-            override_generic_sorter = true,
-            override_file_sorter = true,
-            case_mode = "smart_case",
-          },
-        },
-      }
-    end,
-    config = function(_, opts)
-      local telescope = require("telescope")
-      telescope.setup(opts)
-      telescope.load_extension("fzf")
-      telescope.load_extension("frecency")
     end,
   },
 
