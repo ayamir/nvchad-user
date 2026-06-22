@@ -6,6 +6,37 @@
 local M = {}
 local helper = require("utils.helpers")
 
+local function is_snacks_explorer_root_win(win)
+  if not Snacks or not Snacks.picker or not Snacks.picker.get then
+    return false
+  end
+
+  local ok, pickers = pcall(Snacks.picker.get, { source = "explorer" })
+  if not ok then
+    return false
+  end
+
+  for _, picker in ipairs(pickers) do
+    local root = picker.layout and picker.layout.root
+    if root and root.win == win then
+      return true
+    end
+  end
+
+  return false
+end
+
+local function snacks_explorer_tree_offset()
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if vim.api.nvim_win_get_config(win).relative == "" and is_snacks_explorer_root_win(win) then
+      local width = vim.api.nvim_win_get_width(win)
+      return "%#NvimTreeNormal#" .. string.rep(" ", width) .. "%#NvimTreeWinSeparator#" .. "│"
+    end
+  end
+
+  return ""
+end
+
 M.base46 = {
   theme = "everforest_light",
   theme_toggle = { "everforest_light", "everforest" },
@@ -68,6 +99,9 @@ M.ui = {
   },
   tabufline = {
     lazyload = false,
+    modules = {
+      treeOffset = snacks_explorer_tree_offset,
+    },
   },
 }
 M.term = {
