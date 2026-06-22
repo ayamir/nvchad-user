@@ -829,7 +829,7 @@ Run:
 
 ```bash
 rg -n "NvimTree|nvim-tree|NvimTreeOpen|NvimTreeToggle|nvimtree" lua
-nvim --headless -u init.lua '+lua Snacks.explorer.open(); vim.schedule(function() vim.cmd("qa") end)' 
+nvim --headless -u init.lua '+lua Snacks.explorer.open(); vim.schedule(function() vim.cmd("qa") end)'
 ```
 
 Expected: `rg` prints no matches; Neovim exits `0`.
