@@ -10,6 +10,20 @@ return function()
     end
   end
 
+  local function is_explorer_win(win)
+    for _, picker in ipairs(Snacks.picker.get({ source = "explorer" })) do
+      local list = picker.list and picker.list.win
+      local input = picker.input and picker.input.win
+      local preview = picker.preview and picker.preview.win
+
+      if (list and list.win == win) or (input and input.win == win) or (preview and preview.win == win) then
+        return true
+      end
+    end
+
+    return false
+  end
+
   require("edgy").setup({
     animate = { enabled = false },
     close_when_all_hidden = true,
@@ -39,8 +53,7 @@ return function()
         collapsed = false,
         size = { height = 0.6, width = 0.2 },
         filter = function(_, win)
-          local picker = vim.w[win].snacks_picker
-          return picker and picker.source == "explorer"
+          return is_explorer_win(win)
         end,
         open = function()
           Snacks.explorer.open()
