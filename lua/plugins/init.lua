@@ -48,9 +48,6 @@ return {
         "select_next",
         "snippet_forward",
         function()
-          return require("sidekick").nes_jump_or_apply()
-        end,
-        function()
           return vim.lsp.inline_completion and vim.lsp.inline_completion.get and vim.lsp.inline_completion.get()
         end,
         "fallback",
@@ -724,44 +721,6 @@ return {
         autoselect_longest_match = true,
       })
     end,
-  },
-
-  {
-    "folke/sidekick.nvim",
-    event = "VeryLazy",
-    opts = {
-      nes = { enabled = false },
-      cli = {
-        picker = "telescope",
-        win = {
-          split = {
-            width = 0.4,
-          },
-        },
-        mux = {
-          backend = "zellij",
-          enabled = true,
-        },
-        tools = {
-          coco = {
-            cmd = { "coco" },
-            title = "Coco",
-          },
-          aiden = {
-            cmd = { "aiden" },
-            title = "Aiden",
-          },
-          codex = {
-            cmd = { "codex" },
-            title = "Codex",
-          },
-          claude = {
-            cmd = { "claude" },
-            title = "Claude Code",
-          },
-        },
-      },
-    },
   },
 
   {
