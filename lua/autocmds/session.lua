@@ -20,7 +20,19 @@ local TRANSIENT_SESSION_FILETYPES = {
   "NvTerm_vsp",
 }
 
+local function close_snacks_explorer()
+  if not package.loaded.snacks then
+    return
+  end
+
+  for _, picker in ipairs(Snacks.picker.get({ source = "explorer", tab = false })) do
+    picker:close()
+  end
+end
+
 local function cleanup_persisted_buffers()
+  close_snacks_explorer()
+
   for _, buf in ipairs(api.nvim_list_bufs()) do
     local ft = vim.bo[buf].filetype
     local bt = vim.bo[buf].buftype
