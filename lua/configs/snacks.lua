@@ -29,7 +29,7 @@ return {
     },
     sources = {
       explorer = {
-        layout = { preset = "sidebar", preview = false },
+        layout = { preset = "sidebar", preview = { enabled = false, main = true } },
         win = {
           input = {
             keys = {
@@ -40,6 +40,16 @@ return {
             keys = {
               ["<c-n>"] = { "close", mode = "n", desc = "Toggle filetree" },
             },
+          },
+          preview = {
+            width = 0.75,
+            height = 0.75,
+            row = 0.1,
+            col = 0.125,
+            border = "rounded",
+            title = " {preview} ",
+            title_pos = "center",
+            backdrop = false,
           },
         },
       },
