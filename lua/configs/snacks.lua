@@ -17,9 +17,7 @@ return {
     enabled = true,
     ui_select = true,
     layout = {
-      preset = function()
-        return vim.o.columns >= 120 and "default" or "vertical"
-      end,
+      preset = "ivy",
     },
     matcher = {
       fuzzy = true,
