@@ -118,7 +118,6 @@ local function resolve_path(path, base_winid)
 end
 
 local SPECIAL_FILETYPES = {
-  NvimTree = true,
   ["neo-tree"] = true,
   aerial = true,
   alpha = true,
@@ -131,6 +130,10 @@ local SPECIAL_FILETYPES = {
   qf = true,
   snacks_notif = true,
   snacks_notif_history = true,
+  snacks_picker = true,
+  snacks_picker_input = true,
+  snacks_picker_list = true,
+  snacks_picker_preview = true,
   trouble = true,
 }
 

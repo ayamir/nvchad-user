@@ -34,11 +34,17 @@ return function()
     },
     left = {
       {
-        ft = "NvimTree",
+        ft = "snacks_picker_list",
         pinned = true,
         collapsed = false,
-        size = { height = 0.6, width = 0.15 },
-        open = "NvimTreeOpen",
+        size = { height = 0.6, width = 0.2 },
+        filter = function(_, win)
+          local picker = vim.w[win].snacks_picker
+          return picker and picker.source == "explorer"
+        end,
+        open = function()
+          Snacks.explorer.open()
+        end,
       },
       {
         ft = "trouble",

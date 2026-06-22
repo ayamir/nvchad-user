@@ -512,6 +512,21 @@ local mappings = {
       :with_desc("Find marks"),
   },
 
+  plugin_explorer = {
+    ["n|<leader>e"] = map_callback(function()
+        Snacks.explorer.open()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Explorer"),
+    ["n|<leader>E"] = map_callback(function()
+        Snacks.explorer.reveal()
+      end)
+      :with_noremap()
+      :with_silent()
+      :with_desc("Explorer reveal file"),
+  },
+
   plugin_pack = {
     ["n|<leader>ph"] = map_cr("Lazy"):with_silent():with_noremap():with_nowait():with_desc("package: Show"),
     ["n|<leader>ps"] = map_cr("Lazy sync"):with_silent():with_noremap():with_nowait():with_desc("package: Sync"),
@@ -527,7 +542,6 @@ local mappings = {
 
   -- 其他功能映射
   plugin_lsputils = {
-    ["n|<leader>e"] = map_cr("e"):with_noremap():with_silent():with_desc("Refresh LSP symbols"),
     -- 切换保存时自动格式化
     ["n|<A-f>"] = map_cr("FormatToggle"):with_noremap():with_silent():with_desc("Toggle format on save"),
     -- 手动格式化当前缓冲区
