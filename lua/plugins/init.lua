@@ -2,6 +2,13 @@ local helpers = require("utils.helpers")
 
 return {
   {
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    opts = require("configs.snacks"),
+  },
+
+  {
     "stevearc/conform.nvim",
     -- event = 'BufWritePre', -- uncomment for format on save
     opts = require("configs.conform"),
