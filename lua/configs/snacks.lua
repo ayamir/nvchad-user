@@ -32,6 +32,18 @@ return {
     sources = {
       explorer = {
         layout = { preset = "sidebar", preview = false },
+        win = {
+          input = {
+            keys = {
+              ["<c-n>"] = { "close", mode = { "i", "n" }, desc = "Toggle filetree" },
+            },
+          },
+          list = {
+            keys = {
+              ["<c-n>"] = { "close", mode = "n", desc = "Toggle filetree" },
+            },
+          },
+        },
       },
     },
   },

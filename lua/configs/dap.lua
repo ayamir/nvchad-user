@@ -80,15 +80,9 @@ return function()
 
   -- 定义断点等符号（用简单字符替代 nvimdots 的图标）
   vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DiagnosticSignError", linehl = "", numhl = "" })
-  vim.fn.sign_define(
-    "DapBreakpointCondition",
-    { text = "◆", texthl = "DiagnosticSignWarn", linehl = "", numhl = "" }
-  )
+  vim.fn.sign_define("DapBreakpointCondition", { text = "◆", texthl = "DiagnosticSignWarn", linehl = "", numhl = "" })
   vim.fn.sign_define("DapStopped", { text = "▶", texthl = "DiagnosticSignInfo", linehl = "", numhl = "" })
-  vim.fn.sign_define(
-    "DapBreakpointRejected",
-    { text = "", texthl = "DiagnosticSignError", linehl = "", numhl = "" }
-  )
+  vim.fn.sign_define("DapBreakpointRejected", { text = "", texthl = "DiagnosticSignError", linehl = "", numhl = "" })
   vim.fn.sign_define("DapLogPoint", { text = "◆", texthl = "DiagnosticSignHint", linehl = "", numhl = "" })
 
   -- mason-nvim-dap 安装/管理调试适配器
@@ -159,8 +153,7 @@ return function()
     else
       callback({
         type = "executable",
-        command = is_windows() and debugpy_root .. "/venv/Scripts/pythonw.exe"
-          or debugpy_root .. "/venv/bin/python",
+        command = is_windows() and debugpy_root .. "/venv/Scripts/pythonw.exe" or debugpy_root .. "/venv/bin/python",
         args = { "-m", "debugpy.adapter" },
         options = { source_filetype = "python" },
       })

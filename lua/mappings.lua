@@ -6,6 +6,15 @@ local map_cr = bind.map_cr
 local map_cmd = bind.map_cmd
 local map_callback = bind.map_callback
 
+local function toggle_explorer()
+  local explorer = Snacks.picker.get({ source = "explorer" })[1]
+  if explorer then
+    explorer:close()
+  else
+    Snacks.explorer.open()
+  end
+end
+
 local function get_visual_selection()
   local save_reg = vim.fn.getreg("v")
   local save_type = vim.fn.getregtype("v")
@@ -23,7 +32,7 @@ local mappings = {
   nvchad_core = {
     -- 文件树切换
     ["n|<C-n>"] = map_callback(function()
-        require("edgy").toggle("left")
+        toggle_explorer()
       end)
       :with_noremap()
       :with_silent()
@@ -512,21 +521,6 @@ local mappings = {
       :with_desc("Find marks"),
   },
 
-  plugin_explorer = {
-    ["n|<leader>e"] = map_callback(function()
-        Snacks.explorer.open()
-      end)
-      :with_noremap()
-      :with_silent()
-      :with_desc("Explorer"),
-    ["n|<leader>E"] = map_callback(function()
-        Snacks.explorer.reveal()
-      end)
-      :with_noremap()
-      :with_silent()
-      :with_desc("Explorer reveal file"),
-  },
-
   plugin_pack = {
     ["n|<leader>ph"] = map_cr("Lazy"):with_silent():with_noremap():with_nowait():with_desc("package: Show"),
     ["n|<leader>ps"] = map_cr("Lazy sync"):with_silent():with_noremap():with_nowait():with_desc("package: Sync"),
@@ -563,5 +557,9 @@ end
 for _, mapping in pairs(mappings) do
   bind.nvim_load_mapping(mapping)
 end
+
+-- Disable NvChad's default explorer shortcuts.
+pcall(vim.keymap.del, "n", "<leader>e")
+pcall(vim.keymap.del, "n", "<leader>E")
 
 return mappings
