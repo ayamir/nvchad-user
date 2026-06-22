@@ -73,12 +73,10 @@ return function()
     bottom = {
       { ft = "qf", size = { height = 0.3 } },
       {
-        ft = "toggleterm",
+        ft = "snacks_terminal",
         size = { height = 0.3 },
         filter = function(_, win)
-          local cfg = vim.api.nvim_win_get_config(win)
-          local term = require("toggleterm.terminal").get(1)
-          return cfg.relative == "" and term.direction == "horizontal"
+          return vim.w[win].snacks_win and vim.w[win].snacks_win.position == "bottom"
         end,
       },
       {
