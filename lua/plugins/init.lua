@@ -266,31 +266,6 @@ return {
     },
   },
 
-  -- {
-  --   "karb94/neoscroll.nvim",
-  --   lazy = true,
-  --   event = { "BufReadPost" },
-  --   opts = {
-  --     hide_cursor = true,
-  --     stop_eof = true,
-  --     use_local_scrolloff = false,
-  --     respect_scrolloff = false,
-  --     cursor_scrolls_alone = true,
-  --     mappings = {
-  --       "<C-u>",
-  --       "<C-d>",
-  --       "<C-b>",
-  --       "<C-f>",
-  --       "<C-y>",
-  --       "<C-e>",
-  --       "zt",
-  --       "zz",
-  --       "zb",
-  --     },
-  --     easing_function = "quadratic",
-  --   },
-  -- },
-
   -- tools
   {
     "olimorris/persisted.nvim",
@@ -379,21 +354,6 @@ return {
     version = "*",
     init = require("configs.rust"),
     dependencies = "nvim-lua/plenary.nvim",
-  },
-
-  {
-    "ayamir/garbage-day.nvim",
-    enabled = false,
-    -- enabled = vim.fn.has("unix") == 0 or vim.fn.has("mac") == 1,
-    lazy = true,
-    event = "LspAttach",
-    config = function()
-      require("garbage-day").setup({
-        excluded_lsp_clients = { "null-ls" },
-        notifications = true,
-        grace_period = 10 * 60,
-      })
-    end,
   },
 
   {
@@ -611,18 +571,6 @@ return {
   },
 
   {
-    "lowitea/aw-watcher.nvim",
-    lazy = true,
-    event = "VeryLazy",
-    opts = {
-      aw_server = {
-        host = "127.0.0.1",
-        port = 5600,
-      },
-    },
-  },
-
-  {
     "akinsho/toggleterm.nvim",
     lazy = true,
     version = "*",
@@ -717,44 +665,6 @@ return {
         autoselect_longest_match = true,
       })
     end,
-  },
-
-  {
-    "folke/sidekick.nvim",
-    event = "VeryLazy",
-    opts = {
-      nes = { enabled = false },
-      cli = {
-        picker = "telescope",
-        win = {
-          split = {
-            width = 0.4,
-          },
-        },
-        mux = {
-          backend = "zellij",
-          enabled = true,
-        },
-        tools = {
-          coco = {
-            cmd = { "coco" },
-            title = "Coco",
-          },
-          aiden = {
-            cmd = { "aiden" },
-            title = "Aiden",
-          },
-          codex = {
-            cmd = { "codex" },
-            title = "Codex",
-          },
-          claude = {
-            cmd = { "claude" },
-            title = "Claude Code",
-          },
-        },
-      },
-    },
   },
 
   {
