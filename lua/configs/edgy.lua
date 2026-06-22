@@ -10,13 +10,10 @@ return function()
     end
   end
 
-  local function is_explorer_win(win)
+  local function is_explorer_root_win(win)
     for _, picker in ipairs(Snacks.picker.get({ source = "explorer" })) do
-      local list = picker.list and picker.list.win
-      local input = picker.input and picker.input.win
-      local preview = picker.preview and picker.preview.win
-
-      if (list and list.win == win) or (input and input.win == win) or (preview and preview.win == win) then
+      local root = picker.layout and picker.layout.root
+      if root and root.win == win then
         return true
       end
     end
@@ -48,12 +45,12 @@ return function()
     },
     left = {
       {
-        ft = "snacks_picker_list",
+        ft = "snacks_layout_box",
         pinned = true,
         collapsed = false,
         size = { height = 0.6, width = 0.2 },
         filter = function(_, win)
-          return is_explorer_win(win)
+          return is_explorer_root_win(win)
         end,
         open = function()
           Snacks.explorer.open()
