@@ -8,7 +8,20 @@ return {
     opts = require("configs.snacks"),
   },
 
-  { "nvim-telescope/telescope.nvim", enabled = false },
+  {
+    "nvim-telescope/telescope.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = function()
+      return {
+        defaults = require("telescope.themes").get_ivy({
+          sorting_strategy = "ascending",
+        }),
+      }
+    end,
+    config = function(_, opts)
+      require("telescope").setup(opts)
+    end,
+  },
   { "nvim-tree/nvim-tree.lua", enabled = false },
   { "lukas-reineke/indent-blankline.nvim", enabled = false },
 
