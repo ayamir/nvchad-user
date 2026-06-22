@@ -132,7 +132,7 @@ end
 function M.toggle_all_terms()
   local open = false
   for _, term in ipairs(Snacks.terminal.list()) do
-    if term:is_valid() and term:win_valid() then
+    if term:buf_valid() and term:win_valid() then
       open = true
       term:hide()
     end
