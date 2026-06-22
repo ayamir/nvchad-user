@@ -41,10 +41,6 @@ return {
     opts = function(_, opts)
       opts = opts or {}
 
-      opts.enabled = function()
-        return vim.bo.filetype ~= "DressingInput"
-      end
-
       opts.keymap = opts.keymap or {}
       opts.keymap["<Tab>"] = {
         "select_next",
@@ -77,16 +73,6 @@ return {
 
       return opts
     end,
-  },
-
-  {
-    "stevearc/dressing.nvim",
-    event = "VeryLazy",
-    opts = {
-      select = {
-        backend = { "telescope", "builtin" },
-      },
-    },
   },
 
   {
@@ -402,7 +388,6 @@ return {
     },
     dependencies = {
       { "kkharji/sqlite.lua" },
-      { "stevearc/dressing.nvim" }, -- optional: better UI
     },
     config = function()
       require("bookmarks").setup({})
@@ -537,27 +522,6 @@ return {
         },
       },
     },
-  },
-
-  {
-    "rcarriga/nvim-notify",
-    config = function()
-      local notify = require("notify")
-      notify.setup({
-        fps = 30,
-        stages = "static",
-        timeout = 1000,
-        render = "default",
-        minimum_width = 50,
-        background_colour = "NotifyBackground",
-        on_open = function(win)
-          vim.api.nvim_set_option_value("winblend", 0, { scope = "local", win = win })
-          vim.api.nvim_win_set_config(win, { zindex = 90 })
-        end,
-        level = "INFO",
-      })
-      vim.notify = notify
-    end,
   },
 
   {
@@ -702,7 +666,6 @@ return {
     },
     dependencies = {
       "MunifTanjim/nui.nvim",
-      "rcarriga/nvim-notify",
     },
   },
 

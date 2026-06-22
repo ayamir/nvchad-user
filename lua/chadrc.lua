@@ -51,7 +51,6 @@ M.base46 = {
     "edgy",
     "grug_far",
     "mason",
-    "notify",
     "lsp",
     "lspsaga",
     "whichkey",
