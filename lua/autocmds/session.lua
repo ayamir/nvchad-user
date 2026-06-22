@@ -28,6 +28,23 @@ local function close_snacks_explorer()
   for _, picker in ipairs(Snacks.picker.get({ source = "explorer", tab = false })) do
     picker:close()
   end
+
+  vim.wait(100, function()
+    if #Snacks.picker.get({ source = "explorer", tab = false }) > 0 then
+      return false
+    end
+
+    for _, win in ipairs(api.nvim_list_wins()) do
+      local ft = vim.bo[api.nvim_win_get_buf(win)].filetype
+      if ft == "snacks_layout_box" or ft:match("^snacks_picker") then
+        return false
+      end
+    end
+
+    return true
+  end, 5)
+
+  pcall(require("edgy").close, "left")
 end
 
 local function cleanup_persisted_buffers()
