@@ -345,14 +345,6 @@ return {
   },
 
   {
-    "ibhagwan/fzf-lua",
-    lazy = true,
-    cmd = "FzfLua",
-    config = require("configs.fzf-lua"),
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-  },
-
-  {
     "ayamir/lspsaga.nvim",
     lazy = true,
     event = "LspAttach",
@@ -368,12 +360,6 @@ return {
     dependencies = {
       { "junegunn/fzf", build = ":call fzf#install()" },
     },
-  },
-
-  {
-    "DrKJeff16/project.nvim",
-    event = { "CursorHold", "CursorHoldI" },
-    config = require("configs.project"),
   },
 
   {
@@ -675,34 +661,9 @@ return {
   },
 
   {
-    "aaronhallaert/advanced-git-search.nvim",
-    cmd = { "AdvancedGitSearch" },
-    config = function()
-      require("telescope").setup({
-        extensions = {
-          advanced_git_search = {
-            diff_plugin = "diff_view",
-            show_builtin_git_pickers = false,
-            entry_default_author_or_date = "both",
-            keymaps = {
-              toggle_date_author = "<C-w>",
-              open_commit_in_browser = "<C-o>",
-              copy_commit_hash = "<C-y>",
-              copy_commit_patch = "<C-p>",
-              show_entire_commit = "<C-e>",
-            },
-          },
-        },
-      })
-      require("telescope").load_extension("advanced_git_search")
-    end,
-    dependencies = {
-      {
-        "sindrets/diffview.nvim",
-        cmd = { "DiffviewOpen", "DiffviewClose" },
-        config = require("configs.diffview"),
-      },
-    },
+    "sindrets/diffview.nvim",
+    cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewFileHistory" },
+    config = require("configs.diffview"),
   },
 
   {
@@ -785,48 +746,6 @@ return {
       vim.g.matchup_surround_enabled = 1
       vim.g.matchup_matchparen_offscreen = { method = "popup" }
     end,
-  },
-
-  {
-    "dmtrKovalenko/fff.nvim",
-    build = function()
-      require("fff.download").download_or_build_binary()
-    end,
-    version = "0.5.2",
-    keys = {
-      {
-        "ff", -- try it if you didn't it is a banger keybinding for a picker
-        function()
-          require("fff").find_files()
-        end,
-        desc = "FFFind files",
-      },
-      {
-        "fw",
-        function()
-          require("fff").live_grep()
-        end,
-        desc = "LiFFFe grep",
-      },
-      {
-        "fp",
-        function()
-          require("fff").live_grep({
-            grep = {
-              modes = { "fuzzy", "plain" },
-            },
-          })
-        end,
-        desc = "Live fffuzy grep",
-      },
-      {
-        "fs",
-        function()
-          require("fff").live_grep({ query = vim.fn.expand("<cword>") })
-        end,
-        desc = "Search current word",
-      },
-    },
   },
 
   {
