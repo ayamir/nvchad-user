@@ -48,7 +48,7 @@ return function()
         ft = "snacks_layout_box",
         pinned = true,
         collapsed = false,
-        size = { height = 0.6, width = 0.2 },
+        size = { height = 0.6, width = 0.15 },
         filter = function(_, win)
           return is_explorer_root_win(win)
         end,
