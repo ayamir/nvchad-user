@@ -56,10 +56,7 @@ return {
     },
   },
   quickfile = { enabled = true },
-  terminal = {
-    enabled = true,
-    win = { style = "terminal" },
-  },
+  terminal = { enabled = false },
   words = { enabled = true },
   styles = {
     terminal = {

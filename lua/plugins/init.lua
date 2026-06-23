@@ -432,6 +432,21 @@ return {
   },
 
   {
+    "akinsho/toggleterm.nvim",
+    lazy = true,
+    version = "*",
+    cmd = {
+      "ToggleTerm",
+      "ToggleTermSetName",
+      "ToggleTermToggleAll",
+      "ToggleTermSendVisualLines",
+      "ToggleTermSendCurrentLine",
+      "ToggleTermSendVisualSelection",
+    },
+    config = require("configs.toggleterm"),
+  },
+
+  {
     "rachartier/tiny-inline-diagnostic.nvim",
     event = "VeryLazy",
     priority = 1000,

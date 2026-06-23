@@ -11,7 +11,7 @@ local CLOSE_WITH_Q_FILETYPES = {
   "nofile",
   "terminal",
   "prompt",
-  "snacks_terminal",
+  "toggleterm",
   "copilot",
   "startuptime",
   "tsplayground",
