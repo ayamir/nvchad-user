@@ -792,32 +792,12 @@ return {
     "leolaurindo/tunnelvision.nvim",
     lazy = true,
     event = "VeryLazy",
-    config = function()
-      local tv = require("tunnelvision")
-
-      tv.setup({
-        mode = "dynamic",
-        scope = "buffer",
-        source = "lsp_else_word",
-        direction = "both",
-      })
-
-      -- vim.keymap.set("n", "<leader>v", "<cmd>TunnelVision on<CR>", { desc = "TunnelVision on" })
-      vim.keymap.set("n", "<leader>v", "<cmd>TunnelVision toggle<CR>", { desc = "TunnelVision toggle" })
-      vim.keymap.set("n", "]v", "<cmd>TunnelVision next<CR>", { desc = "TunnelVision next" })
-      vim.keymap.set("n", "[v", "<cmd>TunnelVision prev<CR>", { desc = "TunnelVision prev" })
-      vim.keymap.set("n", "<Esc>", function()
-        if tv.is_active() then
-          tv.off()
-          return ""
-        end
-        return "<Esc>"
-      end, { expr = true, silent = true, desc = "TunnelVision off on Esc" })
-
-      -- as an example: a different activation as one-shot
-      vim.keymap.set("n", "<leader>V", function()
-        tv.on({ scope = "buffer", source = "word" })
-      end, { desc = "TunnelVision word in buffer" })
-    end,
+    cmd = "TunnelVision",
+    opts = {
+      mode = "dynamic",
+      scope = "buffer",
+      source = "lsp_else_word",
+      direction = "both",
+    },
   },
 }
