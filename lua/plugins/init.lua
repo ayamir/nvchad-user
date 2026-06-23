@@ -572,6 +572,10 @@ return {
       require("fff.download").download_or_build_binary()
     end,
     version = "0.5.2",
+    opts = {},
+    config = function(_, opts)
+      require("configs.fff").setup(opts)
+    end,
     keys = {
       {
         "ff",
