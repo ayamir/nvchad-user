@@ -38,8 +38,8 @@ local function sidekick_statusline()
 end
 
 M.base46 = {
-  theme = "everforest_light",
-  theme_toggle = { "everforest_light", "everforest" },
+  theme = "solarized_light",
+  theme_toggle = { "solarized_light", "everforest" },
   transparency = helper.is_linux(),
 
   hl_override = {
