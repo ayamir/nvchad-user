@@ -95,7 +95,10 @@ M.base46 = {
 M.nvdash = { load_on_startup = false }
 M.ui = {
   statusline = {
-    order = { "mode", "file", "git", "%=", "lsp_msg", "%=", "diagnostics", "lsp", "cwd", "cursor" },
+    order = { "treeOffset", "mode", "file", "git", "%=", "lsp_msg", "%=", "diagnostics", "lsp", "cwd", "cursor" },
+    modules = {
+      treeOffset = snacks_explorer_tree_offset,
+    },
   },
   tabufline = {
     lazyload = false,
