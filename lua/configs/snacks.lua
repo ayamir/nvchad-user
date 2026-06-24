@@ -4,7 +4,7 @@ return {
   indent = {
     enabled = true,
     animate = { enabled = false },
-    scope = { enabled = false },
+    scope = { enabled = true },
   },
   input = { enabled = true },
   notifier = {
