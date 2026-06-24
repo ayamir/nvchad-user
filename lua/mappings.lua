@@ -6,15 +6,6 @@ local map_cr = bind.map_cr
 local map_cmd = bind.map_cmd
 local map_callback = bind.map_callback
 
-local function toggle_explorer()
-  local explorer = Snacks.picker.get({ source = "explorer" })[1]
-  if explorer then
-    explorer:close()
-  else
-    Snacks.explorer.open()
-  end
-end
-
 local function get_visual_selection()
   local save_reg = vim.fn.getreg("v")
   local save_type = vim.fn.getregtype("v")
@@ -32,7 +23,7 @@ local mappings = {
   nvchad_core = {
     -- 文件树切换
     ["n|<C-n>"] = map_callback(function()
-        toggle_explorer()
+        require("edgy").toggle("left")
       end)
       :with_noremap()
       :with_silent()
@@ -559,7 +550,6 @@ for _, mapping in pairs(mappings) do
   bind.nvim_load_mapping(mapping)
 end
 
--- Disable NvChad's default explorer shortcuts.
 pcall(vim.keymap.del, "n", "<leader>E")
 
 return mappings

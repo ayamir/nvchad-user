@@ -10,17 +10,6 @@ return function()
     end
   end
 
-  local function is_explorer_root_win(win)
-    for _, picker in ipairs(Snacks.picker.get({ source = "explorer" })) do
-      local root = picker.layout and picker.layout.root
-      if root and root.win == win then
-        return true
-      end
-    end
-
-    return false
-  end
-
   require("edgy").setup({
     animate = { enabled = false },
     close_when_all_hidden = true,
@@ -45,16 +34,11 @@ return function()
     },
     left = {
       {
-        ft = "snacks_layout_box",
+        ft = "NvimTree",
         pinned = true,
         collapsed = false,
         size = { height = 0.6, width = 0.15 },
-        filter = function(_, win)
-          return is_explorer_root_win(win)
-        end,
-        open = function()
-          Snacks.explorer.open()
-        end,
+        open = "NvimTreeOpen",
       },
       {
         ft = "trouble",

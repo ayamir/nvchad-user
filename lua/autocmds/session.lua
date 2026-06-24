@@ -7,10 +7,7 @@ local M = {}
 local TRANSIENT_SESSION_FILETYPES = {
   "zellij",
   "codecompanion",
-  "snacks_picker",
-  "snacks_picker_list",
-  "snacks_picker_input",
-  "snacks_picker_preview",
+  "NvimTree",
   "Trouble",
   "qf",
   "netrw",
@@ -20,36 +17,7 @@ local TRANSIENT_SESSION_FILETYPES = {
   "NvTerm_vsp",
 }
 
-local function close_snacks_explorer()
-  if not package.loaded.snacks then
-    return
-  end
-
-  for _, picker in ipairs(Snacks.picker.get({ source = "explorer", tab = false })) do
-    picker:close()
-  end
-
-  vim.wait(100, function()
-    if #Snacks.picker.get({ source = "explorer", tab = false }) > 0 then
-      return false
-    end
-
-    for _, win in ipairs(api.nvim_list_wins()) do
-      local ft = vim.bo[api.nvim_win_get_buf(win)].filetype
-      if ft == "snacks_layout_box" or ft:match("^snacks_picker") then
-        return false
-      end
-    end
-
-    return true
-  end, 5)
-
-  pcall(require("edgy").close, "left")
-end
-
 local function cleanup_persisted_buffers()
-  close_snacks_explorer()
-
   for _, buf in ipairs(api.nvim_list_bufs()) do
     local ft = vim.bo[buf].filetype
     local bt = vim.bo[buf].buftype
@@ -60,11 +28,25 @@ local function cleanup_persisted_buffers()
   end
 end
 
+local function maybe_close_nvim_tree()
+  local layout = vim.fn.winlayout()
+
+  if layout[1] == "leaf" and vim.bo[api.nvim_win_get_buf(layout[2])].filetype == "NvimTree" and layout[3] == nil then
+    vim.cmd("confirm quit")
+  end
+end
+
 function M.setup()
   create_autocmd("User", {
     group = create_augroup("PersistedCleanup"),
     pattern = "PersistedSavePre",
     callback = cleanup_persisted_buffers,
+  })
+
+  create_autocmd("BufEnter", {
+    group = create_augroup("NvimTreeAutoClose"),
+    pattern = "NvimTree_*",
+    callback = maybe_close_nvim_tree,
   })
 end
 
