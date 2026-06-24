@@ -30,7 +30,7 @@ return {
   },
   quickfile = { enabled = true },
   terminal = { enabled = false },
-  words = { enabled = true },
+  words = { enabled = false },
   styles = {
     terminal = {
       position = "float",
