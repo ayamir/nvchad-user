@@ -1,6 +1,6 @@
 return {
   bigfile = { enabled = true },
-  dashboard = { enabled = false },
+  dashboard = { enabled = true },
   indent = {
     enabled = true,
     animate = { enabled = false },
