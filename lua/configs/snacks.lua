@@ -83,7 +83,11 @@ return {
     enabled = true,
     replace_netrw = true,
   },
-  indent = { enabled = true },
+  indent = {
+    enabled = true,
+    animate = { enabled = false },
+    scope = { enabled = true },
+  },
   input = { enabled = true },
   notifier = {
     enabled = true,
