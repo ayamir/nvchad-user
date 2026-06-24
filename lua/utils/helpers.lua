@@ -27,10 +27,9 @@ function M.is_archlinux()
 end
 
 function M.find_or_create_project_bookmark_group()
-  local project_root = require("project").get_project_root()
-  if not project_root then
-    return
-  end
+  local current_file = vim.api.nvim_buf_get_name(0)
+  local start = current_file ~= "" and current_file or vim.uv.cwd()
+  local project_root = vim.fs.root(start, { ".git" }) or vim.uv.cwd()
 
   local project_name = project_root
     :gsub("^" .. vim.pesc(os.getenv("HOME")) .. "/", "")
