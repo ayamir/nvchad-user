@@ -6,18 +6,6 @@ local map_cr = bind.map_cr
 local map_cmd = bind.map_cmd
 local map_callback = bind.map_callback
 
-local function get_visual_selection()
-  local save_reg = vim.fn.getreg("v")
-  local save_type = vim.fn.getregtype("v")
-
-  vim.cmd([[noau normal! "vy]])
-  local text = vim.fn.getreg("v")
-  vim.fn.setreg("v", save_reg, save_type)
-
-  text = text:gsub("\n", "")
-  return #text > 0 and text or nil
-end
-
 local mappings = {
   -- NvChad 核心功能映射
   nvchad_core = {
