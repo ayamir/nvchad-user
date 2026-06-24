@@ -215,18 +215,6 @@ local mappings = {
     ["n|<leader>v"] = map_cr("TunnelVision toggle"):with_noremap():with_silent():with_desc("TunnelVision toggle"),
     ["n|]v"] = map_cr("TunnelVision next"):with_noremap():with_silent():with_desc("TunnelVision next"),
     ["n|[v"] = map_cr("TunnelVision prev"):with_noremap():with_silent():with_desc("TunnelVision prev"),
-    ["n|<Esc>"] = map_callback(function()
-        local tv = require("tunnelvision")
-        if tv.is_active() then
-          tv.off()
-          return ""
-        end
-        return "<Esc>"
-      end)
-      :with_noremap()
-      :with_silent()
-      :with_expr()
-      :with_desc("TunnelVision off on Esc"),
   },
 
   -- 插件映射：Git 功能
