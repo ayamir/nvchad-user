@@ -536,6 +536,7 @@ local mappings = {
 
   -- 其他功能映射
   plugin_lsputils = {
+    ["n|<leader>e"] = map_cr("e"):with_noremap():with_silent():with_desc("Refresh LSP symbols"),
     -- 切换保存时自动格式化
     ["n|<A-f>"] = map_cr("FormatToggle"):with_noremap():with_silent():with_desc("Toggle format on save"),
     -- 手动格式化当前缓冲区
@@ -559,7 +560,6 @@ for _, mapping in pairs(mappings) do
 end
 
 -- Disable NvChad's default explorer shortcuts.
-pcall(vim.keymap.del, "n", "<leader>e")
 pcall(vim.keymap.del, "n", "<leader>E")
 
 return mappings
