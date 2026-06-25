@@ -58,6 +58,7 @@ M.base46 = {
   },
 
   integrations = {
+    "blankline",
     "hop",
     "bookmarks",
     "blink",
