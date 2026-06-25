@@ -593,6 +593,29 @@ return {
   },
 
   {
+    "aaronhallaert/advanced-git-search.nvim",
+    cmd = { "AdvancedGitSearch" },
+    config = function()
+      require("advanced_git_search.snacks").setup({
+        diff_plugin = "diffview",
+        show_builtin_git_pickers = false,
+        entry_default_author_or_date = "both",
+        keymaps = {
+          toggle_date_author = "<C-w>",
+          open_commit_in_browser = "<C-o>",
+          copy_commit_hash = "<C-y>",
+          copy_commit_patch = "<C-p>",
+          show_entire_commit = "<C-e>",
+        },
+      })
+    end,
+    dependencies = {
+      "folke/snacks.nvim",
+      "sindrets/diffview.nvim",
+    },
+  },
+
+  {
     "nguyenvukhang/nvim-toggler",
     config = function()
       require("nvim-toggler").setup({
