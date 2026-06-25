@@ -6,35 +6,21 @@
 local M = {}
 local helper = require("utils.helpers")
 
-local function sidekick_statusline()
-  local ok, sidekick = pcall(require, "sidekick.status")
-  if not ok then
+local function nvim_tree_offset()
+  if vim.bo.filetype == "NvimTree" then
     return ""
   end
 
-  local parts = {}
-  local status = sidekick.get()
-  local sessions = sidekick.cli()
-
-  if status then
-    local hl = "%#St_LspInfo#"
-    if status.kind == "Error" then
-      hl = "%#St_lspError#"
-    elseif status.busy then
-      hl = "%#St_lspWarning#"
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if
+      vim.api.nvim_win_get_config(win).relative == "" and vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "NvimTree"
+    then
+      local width = vim.api.nvim_win_get_width(win)
+      return "%#NvimTreeNormal#" .. string.rep(" ", width) .. "%#NvimTreeWinSeparator#" .. "│"
     end
-    parts[#parts + 1] = hl .. " "
   end
 
-  if #sessions > 0 then
-    parts[#parts + 1] = "%#St_LspInfo# " .. (#sessions > 1 and #sessions or "") .. " "
-  end
-
-  if #parts == 0 then
-    return ""
-  end
-
-  return " " .. table.concat(parts, "")
+  return ""
 end
 
 M.base46 = {
@@ -75,14 +61,11 @@ M.base46 = {
     "hop",
     "bookmarks",
     "blink",
-    "blankline",
     "treesitter",
     "dap",
-    "blankline",
     "edgy",
     "grug_far",
     "mason",
-    "notify",
     "lsp",
     "lspsaga",
     "whichkey",
@@ -91,24 +74,23 @@ M.base46 = {
     "git",
     "devicons",
     "todo",
-    "telescope",
     "tiny-inline-diagnostic",
   },
 }
 
-M.nvdash = { load_on_startup = true }
+M.nvdash = { load_on_startup = false }
 M.ui = {
   statusline = {
-    order = { "mode", "file", "git", "%=", "lsp_msg", "sidekick", "%=", "diagnostics", "lsp", "cwd", "cursor" },
+    order = { "treeOffset", "mode", "file", "git", "%=", "lsp_msg", "%=", "diagnostics", "lsp", "cwd", "cursor" },
     modules = {
-      sidekick = sidekick_statusline,
+      treeOffset = nvim_tree_offset,
     },
   },
   tabufline = {
     lazyload = false,
-  },
-  telescope = {
-    style = "bordered",
+    modules = {
+      treeOffset = nvim_tree_offset,
+    },
   },
 }
 M.term = {

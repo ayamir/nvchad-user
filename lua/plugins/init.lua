@@ -2,124 +2,35 @@ local helpers = require("utils.helpers")
 
 return {
   {
-    "stevearc/conform.nvim",
-    -- event = 'BufWritePre', -- uncomment for format on save
-    opts = require("configs.conform"),
-  },
-
-  -- These are some examples, uncomment them if you want to see them work!
-  {
-    "neovim/nvim-lspconfig",
-    dependencies = {
-      "williamboman/mason-lspconfig.nvim",
-    },
-    config = function()
-      require("configs.lspconfig")
-    end,
-  },
-
-  { import = "nvchad.blink.lazyspec" },
-
-  {
-    "saghen/blink.cmp",
-    dependencies = {
-      {
-        "saghen/blink.compat",
-        version = "v2.*",
-        opts = {},
-      },
-    },
-    opts = function(_, opts)
-      opts = opts or {}
-
-      opts.enabled = function()
-        return vim.bo.filetype ~= "DressingInput"
-      end
-
-      opts.keymap = opts.keymap or {}
-      opts.keymap["<Tab>"] = {
-        "select_next",
-        "snippet_forward",
-        function()
-          return require("sidekick").nes_jump_or_apply()
-        end,
-        function()
-          return vim.lsp.inline_completion and vim.lsp.inline_completion.get and vim.lsp.inline_completion.get()
-        end,
-        "fallback",
-      }
-
-      opts.completion = opts.completion or {}
-      opts.completion.ghost_text = { enabled = false }
-      opts.completion.list = { max_items = 120 }
-      local menu = vim.deepcopy(require("nvchad.blink").menu)
-      menu.draw = menu.draw or {}
-      menu.draw.components = menu.draw.components or {}
-      menu.draw.components.kind = menu.draw.components.kind or {}
-      menu.draw.components.kind.text = function(ctx)
-        if ctx.source_id == "trae" then
-          return "Trae"
-        end
-        return ctx.kind
-      end
-      opts.completion.menu = menu
-
-      -- Sources
-      opts.sources = opts.sources or {}
-      opts.sources.default = opts.sources.default or { "lsp", "buffer", "snippets", "path" }
-      opts.sources.providers = opts.sources.providers or {}
-
-      return opts
-    end,
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    opts = require("configs.snacks"),
   },
 
   {
     "nvim-telescope/telescope.nvim",
-    dependencies = {
-      {
-        "nvim-telescope/telescope-fzf-native.nvim",
-        build = "make",
-      },
-      {
-        "nvim-telescope/telescope-frecency.nvim",
-        dependencies = { "kkharji/sqlite.lua" },
-      },
-    },
+    dependencies = { "nvim-lua/plenary.nvim" },
     opts = function()
       return {
         defaults = require("telescope.themes").get_ivy({
           sorting_strategy = "ascending",
         }),
-        extensions = {
-          fzf = {
-            fuzzy = true,
-            override_generic_sorter = true,
-            override_file_sorter = true,
-            case_mode = "smart_case",
-          },
-        },
       }
     end,
     config = function(_, opts)
-      local telescope = require("telescope")
-      telescope.setup(opts)
-      telescope.load_extension("fzf")
-      telescope.load_extension("frecency")
+      require("telescope").setup(opts)
     end,
   },
-
-  {
-    "stevearc/dressing.nvim",
-    event = "VeryLazy",
-    opts = {
-      select = {
-        backend = { "telescope", "builtin" },
-      },
-    },
-  },
-
   {
     "nvim-tree/nvim-tree.lua",
+    cmd = {
+      "NvimTreeToggle",
+      "NvimTreeOpen",
+      "NvimTreeFindFile",
+      "NvimTreeFindFileToggle",
+      "NvimTreeRefresh",
+    },
     opts = {
       on_attach = function(bufnr)
         local api = require("nvim-tree.api")
@@ -231,6 +142,72 @@ return {
       end,
     },
   },
+  { "lukas-reineke/indent-blankline.nvim", enabled = false },
+
+  {
+    "stevearc/conform.nvim",
+    -- event = 'BufWritePre', -- uncomment for format on save
+    opts = require("configs.conform"),
+  },
+
+  -- These are some examples, uncomment them if you want to see them work!
+  {
+    "neovim/nvim-lspconfig",
+    dependencies = {
+      "williamboman/mason-lspconfig.nvim",
+    },
+    config = function()
+      require("configs.lspconfig")
+    end,
+  },
+
+  { import = "nvchad.blink.lazyspec" },
+
+  {
+    "saghen/blink.cmp",
+    dependencies = {
+      {
+        "saghen/blink.compat",
+        version = "v2.*",
+        opts = {},
+      },
+    },
+    opts = function(_, opts)
+      opts = opts or {}
+
+      opts.keymap = opts.keymap or {}
+      opts.keymap["<Tab>"] = {
+        "select_next",
+        "snippet_forward",
+        function()
+          return vim.lsp.inline_completion and vim.lsp.inline_completion.get and vim.lsp.inline_completion.get()
+        end,
+        "fallback",
+      }
+
+      opts.completion = opts.completion or {}
+      opts.completion.ghost_text = { enabled = false }
+      opts.completion.list = { max_items = 120 }
+      local menu = vim.deepcopy(require("nvchad.blink").menu)
+      menu.draw = menu.draw or {}
+      menu.draw.components = menu.draw.components or {}
+      menu.draw.components.kind = menu.draw.components.kind or {}
+      menu.draw.components.kind.text = function(ctx)
+        if ctx.source_id == "trae" then
+          return "Trae"
+        end
+        return ctx.kind
+      end
+      opts.completion.menu = menu
+
+      -- Sources
+      opts.sources = opts.sources or {}
+      opts.sources.default = opts.sources.default or { "lsp", "buffer", "snippets", "path" }
+      opts.sources.providers = opts.sources.providers or {}
+
+      return opts
+    end,
+  },
 
   {
     "nvim-treesitter/nvim-treesitter",
@@ -277,7 +254,7 @@ return {
       follow_cwd = true,
       use_git_branch = true,
       should_save = function()
-        return vim.bo.filetype == "Nvdash" and false or true
+        return vim.bo.filetype ~= "snacks_dashboard"
       end,
     },
   },
@@ -316,14 +293,6 @@ return {
   },
 
   {
-    "ibhagwan/fzf-lua",
-    lazy = true,
-    cmd = "FzfLua",
-    config = require("configs.fzf-lua"),
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-  },
-
-  {
     "ayamir/lspsaga.nvim",
     lazy = true,
     event = "LspAttach",
@@ -339,12 +308,6 @@ return {
     dependencies = {
       { "junegunn/fzf", build = ":call fzf#install()" },
     },
-  },
-
-  {
-    "DrKJeff16/project.nvim",
-    event = { "CursorHold", "CursorHoldI" },
-    config = require("configs.project"),
   },
 
   {
@@ -405,7 +368,6 @@ return {
     },
     dependencies = {
       { "kkharji/sqlite.lua" },
-      { "stevearc/dressing.nvim" }, -- optional: better UI
     },
     config = function()
       require("bookmarks").setup({})
@@ -527,40 +489,6 @@ return {
     lazy = true,
     event = { "CursorHold", "CursorHoldI" },
     config = require("configs.edgy"),
-    dependencies = {
-      {
-        "nvim-tree/nvim-tree.lua",
-        lazy = true,
-        cmd = {
-          "NvimTreeToggle",
-          "NvimTreeOpen",
-          "NvimTreeFindFile",
-          "NvimTreeFindFileToggle",
-          "NvimTreeRefresh",
-        },
-      },
-    },
-  },
-
-  {
-    "rcarriga/nvim-notify",
-    config = function()
-      local notify = require("notify")
-      notify.setup({
-        fps = 30,
-        stages = "static",
-        timeout = 1000,
-        render = "default",
-        minimum_width = 50,
-        background_colour = "NotifyBackground",
-        on_open = function(win)
-          vim.api.nvim_set_option_value("winblend", 0, { scope = "local", win = win })
-          vim.api.nvim_win_set_config(win, { zindex = 90 })
-        end,
-        level = "INFO",
-      })
-      vim.notify = notify
-    end,
   },
 
   {
@@ -592,60 +520,58 @@ return {
     config = require("configs.tiny-inline-diagnostic"),
   },
 
-  {
-    "jake-stewart/normal-cmdline.nvim",
-    event = "CmdlineEnter",
-    config = function()
-      -- make the cmdline insert mode a beam
-      vim.opt.guicursor:append("ci:ver1,c:ver1")
+  -- {
+  --   "jake-stewart/normal-cmdline.nvim",
+  --   event = "CmdlineEnter",
+  --   config = function()
+  --     -- make the cmdline insert mode a beam
+  --     vim.opt.guicursor:append("ci:ver1,c:ver1")
+  --
+  --     local cmd = require("normal-cmdline")
+  --     cmd.setup({
+  --       -- key to hit within cmdline to enter normal mode:
+  --       key = "<esc>",
+  --       -- the cmdline text highlight when in normal mode:
+  --       hl = "Normal",
+  --       -- these mappings only apply to normal mode in cmdline:
+  --       mappings = {
+  --         ["k"] = cmd.history.prev,
+  --         ["j"] = cmd.history.next,
+  --         ["<cr>"] = cmd.accept,
+  --         ["<esc>"] = cmd.cancel,
+  --         ["<c-c>"] = cmd.cancel,
+  --         [":"] = cmd.reset,
+  --       },
+  --     })
+  --   end,
+  -- },
 
-      local cmd = require("normal-cmdline")
-      cmd.setup({
-        -- key to hit within cmdline to enter normal mode:
-        key = "<esc>",
-        -- the cmdline text highlight when in normal mode:
-        hl = "Normal",
-        -- these mappings only apply to normal mode in cmdline:
-        mappings = {
-          ["k"] = cmd.history.prev,
-          ["j"] = cmd.history.next,
-          ["<cr>"] = cmd.accept,
-          ["<esc>"] = cmd.cancel,
-          ["<c-c>"] = cmd.cancel,
-          [":"] = cmd.reset,
-        },
-      })
-    end,
+  {
+    "sindrets/diffview.nvim",
+    cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewFileHistory" },
+    config = require("configs.diffview"),
   },
 
   {
     "aaronhallaert/advanced-git-search.nvim",
     cmd = { "AdvancedGitSearch" },
     config = function()
-      require("telescope").setup({
-        extensions = {
-          advanced_git_search = {
-            diff_plugin = "diff_view",
-            show_builtin_git_pickers = false,
-            entry_default_author_or_date = "both",
-            keymaps = {
-              toggle_date_author = "<C-w>",
-              open_commit_in_browser = "<C-o>",
-              copy_commit_hash = "<C-y>",
-              copy_commit_patch = "<C-p>",
-              show_entire_commit = "<C-e>",
-            },
-          },
+      require("advanced_git_search.snacks").setup({
+        diff_plugin = "diffview",
+        show_builtin_git_pickers = false,
+        entry_default_author_or_date = "both",
+        keymaps = {
+          toggle_date_author = "<C-w>",
+          open_commit_in_browser = "<C-o>",
+          copy_commit_hash = "<C-y>",
+          copy_commit_patch = "<C-p>",
+          show_entire_commit = "<C-e>",
         },
       })
-      require("telescope").load_extension("advanced_git_search")
     end,
     dependencies = {
-      {
-        "sindrets/diffview.nvim",
-        cmd = { "DiffviewOpen", "DiffviewClose" },
-        config = require("configs.diffview"),
-      },
+      "folke/snacks.nvim",
+      "sindrets/diffview.nvim",
     },
   },
 
@@ -693,34 +619,33 @@ return {
     dependencies = "ray-x/guihua.lua",
   },
 
-  {
-    "folke/noice.nvim",
-    event = "VeryLazy",
-    opts = {
-      lsp = {
-        -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
-        override = {
-          ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
-          ["vim.lsp.util.stylize_markdown"] = true,
-          ["cmp.entry.get_documentation"] = true, -- requires hrsh7th/nvim-cmp
-        },
-        progress = { enabled = false },
-        signature = { enabled = false },
-      },
-      -- you can enable a preset for easier configuration
-      presets = {
-        bottom_search = false, -- use a classic bottom cmdline for search
-        command_palette = false, -- position the cmdline and popupmenu together
-        long_message_to_split = true, -- long messages will be sent to a split
-        inc_rename = true, -- enables an input dialog for inc-rename.nvim
-        lsp_doc_border = true, -- add a border to hover docs and signature help
-      },
-    },
-    dependencies = {
-      "MunifTanjim/nui.nvim",
-      "rcarriga/nvim-notify",
-    },
-  },
+  -- {
+  --   "folke/noice.nvim",
+  --   event = "VeryLazy",
+  --   opts = {
+  --     lsp = {
+  --       -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
+  --       override = {
+  --         ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+  --         ["vim.lsp.util.stylize_markdown"] = true,
+  --         ["cmp.entry.get_documentation"] = true, -- requires hrsh7th/nvim-cmp
+  --       },
+  --       progress = { enabled = false },
+  --       signature = { enabled = false },
+  --     },
+  --     -- you can enable a preset for easier configuration
+  --     presets = {
+  --       bottom_search = false, -- use a classic bottom cmdline for search
+  --       command_palette = false, -- position the cmdline and popupmenu together
+  --       long_message_to_split = true, -- long messages will be sent to a split
+  --       inc_rename = true, -- enables an input dialog for inc-rename.nvim
+  --       lsp_doc_border = true, -- add a border to hover docs and signature help
+  --     },
+  --   },
+  --   dependencies = {
+  --     "MunifTanjim/nui.nvim",
+  --   },
+  -- },
 
   {
     "andymass/vim-matchup",
@@ -737,9 +662,13 @@ return {
       require("fff.download").download_or_build_binary()
     end,
     version = "0.5.2",
+    opts = {},
+    config = function(_, opts)
+      require("configs.fff").setup(opts)
+    end,
     keys = {
       {
-        "ff", -- try it if you didn't it is a banger keybinding for a picker
+        "ff",
         function()
           require("fff").find_files()
         end,

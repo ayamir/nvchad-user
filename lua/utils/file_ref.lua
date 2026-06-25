@@ -1,7 +1,17 @@
 local M = {}
 
 local OPENERS = { ['"'] = true, ["'"] = true, ["("] = true, ["["] = true, ["{"] = true, ["<"] = true }
-local CLOSERS = { ['"'] = true, ["'"] = true, [")"] = true, ["]"] = true, ["}"] = true, [">"] = true, [","] = true, [";"] = true, [":"] = true }
+local CLOSERS = {
+  ['"'] = true,
+  ["'"] = true,
+  [")"] = true,
+  ["]"] = true,
+  ["}"] = true,
+  [">"] = true,
+  [","] = true,
+  [";"] = true,
+  [":"] = true,
+}
 
 local function trim_token(token, start_col, finish_col)
   while #token > 0 do
@@ -108,8 +118,7 @@ local function resolve_path(path, base_winid)
 end
 
 local SPECIAL_FILETYPES = {
-  NvimTree = true,
-  ['neo-tree'] = true,
+  ["neo-tree"] = true,
   aerial = true,
   alpha = true,
   dashboard = true,
@@ -118,8 +127,13 @@ local SPECIAL_FILETYPES = {
   lazy = true,
   man = true,
   noice = true,
-  notify = true,
   qf = true,
+  snacks_notif = true,
+  snacks_notif_history = true,
+  snacks_picker = true,
+  snacks_picker_input = true,
+  snacks_picker_list = true,
+  snacks_picker_preview = true,
   trouble = true,
 }
 

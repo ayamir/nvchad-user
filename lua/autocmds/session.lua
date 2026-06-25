@@ -31,11 +31,7 @@ end
 local function maybe_close_nvim_tree()
   local layout = vim.fn.winlayout()
 
-  if
-    layout[1] == "leaf"
-    and vim.bo[api.nvim_win_get_buf(layout[2])].filetype == "NvimTree"
-    and layout[3] == nil
-  then
+  if layout[1] == "leaf" and vim.bo[api.nvim_win_get_buf(layout[2])].filetype == "NvimTree" and layout[3] == nil then
     vim.cmd("confirm quit")
   end
 end

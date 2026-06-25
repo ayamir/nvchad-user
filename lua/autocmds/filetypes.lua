@@ -7,7 +7,7 @@ local CLOSE_WITH_Q_FILETYPES = {
   "qf",
   "help",
   "man",
-  "notify",
+  "snacks_notif_history",
   "nofile",
   "terminal",
   "prompt",
@@ -26,7 +26,6 @@ local NO_UNDO_PATTERNS = {
   "description",
   "COMMIT_EDITMSG",
 }
-
 
 local function startinsert_in_terminal(event)
   vim.schedule(function()

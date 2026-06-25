@@ -54,6 +54,18 @@ local function get_term_key(term)
   return term.term_key or term.name
 end
 
+local function starts_with(value, prefix)
+  return value:sub(1, #prefix) == prefix
+end
+
+local function ends_with(value, suffix)
+  return suffix == "" or value:sub(-#suffix) == suffix
+end
+
+local function escape_lua_pattern(value)
+  return value:gsub("([^%w])", "%%%1")
+end
+
 local function ensure_zellij_socket_dir()
   if not ZELLIJ_SOCKET_DIR or ZELLIJ_SOCKET_DIR == "" then
     return
@@ -222,30 +234,30 @@ local function parse_zellij_created_seconds(meta)
 end
 
 local function get_sessions(term_name)
-  local project_name_escaped = sanitize_session_part(project_name)
+  local legacy_project_prefix = string.format("%s_", sanitize_session_part(project_name))
   local sanitized_term_name = sanitize_session_part(term_name)
   local compact_term_name = trim_session_part(sanitized_term_name, TERM_TOKEN_MAX_LEN)
-  local term_suffix = string.format("_%s$", sanitized_term_name)
-  local compact_term_suffix = string.format("_%s_[0-9a-f]+$", compact_term_name)
+  local legacy_term_suffix = string.format("_%s", sanitized_term_name)
+  local compact_project_prefix = string.format("%s_", project_token)
+  local compact_term_suffix_pattern = string.format("_%s_[0-9a-f]+$", escape_lua_pattern(compact_term_name))
   local lines = vim.fn.systemlist(string.format("%s list-sessions -n 2>/dev/null", zellij_cli()))
+
   if vim.v.shell_error ~= 0 then
     return {}
   end
 
   local sessions = {}
-
   for _, line in ipairs(lines) do
     if line ~= "No active zellij sessions found." then
       local name, meta = line:match("^(.-)%s+%[(.+)%]%s*$")
       name = name or vim.trim(line)
       if name ~= "" then
-        local is_legacy_project_session = name:find(string.format("^%s_", project_name_escaped))
-          and name:find(term_suffix)
-        local is_compact_project_session = name:find(string.format("^%s_", project_token))
-          and name:find(compact_term_suffix)
-        local is_project_session = is_legacy_project_session or is_compact_project_session
+        local is_legacy_project_session = starts_with(name, legacy_project_prefix)
+          and ends_with(name, legacy_term_suffix)
+        local is_compact_project_session = starts_with(name, compact_project_prefix)
+          and name:find(compact_term_suffix_pattern)
 
-        if is_project_session then
+        if is_legacy_project_session or is_compact_project_session then
           table.insert(sessions, {
             name = name,
             meta = meta,
@@ -255,6 +267,11 @@ local function get_sessions(term_name)
       end
     end
   end
+
+  table.sort(sessions, function(a, b)
+    return (a.created_seconds or math.huge) < (b.created_seconds or math.huge)
+  end)
+
   return sessions
 end
 
