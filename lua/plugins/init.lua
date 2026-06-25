@@ -281,7 +281,7 @@ return {
   },
 
   {
-    "mrjones2014/smart-splits.nvim",
+    "ayamir/smart-splits.nvim",
     event = { "CursorHoldI", "CursorHold" },
     opts = require("configs.splits"),
   },
