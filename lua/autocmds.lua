@@ -4,6 +4,7 @@ local autocmd = {}
 
 local modules = {
   "autocmds.editor",
+  "autocmds.highlights",
   "autocmds.session",
   "autocmds.filetypes",
   "autocmds.dap",

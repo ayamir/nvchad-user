@@ -30,6 +30,7 @@ M.base46 = {
 
   hl_override = {
     ["@comment"] = { italic = true },
+    ["@keyword"] = { italic = true, bold = true },
     NvDashButtons = {
       italic = true,
     },
