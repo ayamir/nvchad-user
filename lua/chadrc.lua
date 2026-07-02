@@ -24,8 +24,8 @@ local function nvim_tree_offset()
 end
 
 M.base46 = {
-  theme = "solarized_light",
-  theme_toggle = { "solarized_light", "everforest" },
+  theme = "rosepine",
+  theme_toggle = { "rosepine", "rosepine-dawn" },
   transparency = helper.is_linux(),
 
   hl_override = {
