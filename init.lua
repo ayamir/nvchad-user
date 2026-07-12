@@ -1,5 +1,6 @@
 vim.g.base46_cache = vim.fn.stdpath("data") .. "/base46/"
 vim.g.mapleader = " "
+vim.api.nvim_set_option_value("guifont", "JetBrainsMono Nerd Font:h12", {})
 vim.g.neovide_input_macos_option_key_is_meta = "both"
 if vim.g.neovide then
   local function save()
