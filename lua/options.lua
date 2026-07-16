@@ -13,5 +13,6 @@ o.wrap = true
 o.splitkeep = "cursor"
 o.equalalways = true
 o.mouse = "a"
+o.wrap = true
 
 vim.opt.sessionoptions:remove("terminal")

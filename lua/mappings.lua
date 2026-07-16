@@ -293,6 +293,12 @@ local mappings = {
       end)
       :with_noremap()
       :with_silent()
+      :with_desc("Git blame_line"),
+    ["n|<leader>gB"] = map_callback(function()
+        require("gitsigns").blame({ full = true })
+      end)
+      :with_noremap()
+      :with_silent()
       :with_desc("Git blame"),
   },
 
