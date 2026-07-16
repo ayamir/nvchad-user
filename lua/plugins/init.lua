@@ -282,6 +282,7 @@ return {
 
   {
     "ayamir/smart-splits.nvim",
+    branch = "feat/herdr",
     event = { "CursorHoldI", "CursorHold" },
     opts = require("configs.splits"),
   },
