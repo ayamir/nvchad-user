@@ -50,10 +50,22 @@ local on_attach = function(_, bufnr)
   map("n", "gD", ":Lspsaga goto_definition<CR>", opts())
   map("n", "gt", ":Trouble diagnostics toggle<CR>", opts())
   map("n", "gh", function()
-    Snacks.picker.lsp_references()
+    Snacks.picker.lsp_references({
+      filter = {
+        filter = function(item)
+          return not (item.file or ""):match("_test%.go$")
+        end,
+      },
+    })
   end, opts())
   map("n", "gm", function()
-    Snacks.picker.lsp_implementations()
+    Snacks.picker.lsp_implementations({
+      filter = {
+        filter = function(item)
+          return not (item.file or ""):lower():find("mock", 1, true)
+        end,
+      },
+    })
   end, opts())
   map("n", "gy", function()
     require("symbol-usage").refresh()
