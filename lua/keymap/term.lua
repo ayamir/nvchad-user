@@ -11,34 +11,6 @@ local BRANCH_TOKEN_MAX_LEN = 10
 local HASH_LEN = 6
 local TERM_TOKEN_MAX_LEN = SESSION_NAME_MAX_LEN - PROJECT_TOKEN_MAX_LEN - BRANCH_TOKEN_MAX_LEN - HASH_LEN - 3
 
-local function get_zellij_socket_dir()
-  local existing = vim.env.ZELLIJ_SOCKET_DIR
-  if existing and existing ~= "" then
-    return existing
-  end
-
-  if vim.fn.has("unix") ~= 1 then
-    return nil
-  end
-
-  local uv = vim.uv or vim.loop
-  if uv and type(uv.os_get_passwd) == "function" then
-    local ok, passwd = pcall(uv.os_get_passwd)
-    if ok and passwd and passwd.uid ~= nil then
-      return string.format("/tmp/zellij-%s", tostring(passwd.uid))
-    end
-  end
-
-  local uid = vim.env.UID
-  if uid and uid ~= "" then
-    return string.format("/tmp/zellij-%s", uid)
-  end
-
-  return "/tmp/zellij"
-end
-
-local ZELLIJ_SOCKET_DIR = get_zellij_socket_dir()
-
 local function sanitize_session_part(value)
   return tostring(value):gsub("[^%w_-]", "_")
 end
@@ -66,24 +38,8 @@ local function escape_lua_pattern(value)
   return value:gsub("([^%w])", "%%%1")
 end
 
-local function ensure_zellij_socket_dir()
-  if not ZELLIJ_SOCKET_DIR or ZELLIJ_SOCKET_DIR == "" then
-    return
-  end
-
-  if vim.fn.isdirectory(ZELLIJ_SOCKET_DIR) == 0 then
-    vim.fn.mkdir(ZELLIJ_SOCKET_DIR, "p")
-  end
-end
-
-local function zellij_cli()
-  ensure_zellij_socket_dir()
-
-  if ZELLIJ_SOCKET_DIR and ZELLIJ_SOCKET_DIR ~= "" then
-    return string.format("env ZELLIJ_SOCKET_DIR=%s zellij", vim.fn.shellescape(ZELLIJ_SOCKET_DIR))
-  end
-
-  return "zellij"
+local function tmux_cli()
+  return "tmux"
 end
 
 local project_token = trim_session_part(sanitize_session_part(project_name), PROJECT_TOKEN_MAX_LEN)
@@ -97,7 +53,7 @@ local function get_git_branch()
   return "main"
 end
 
--- zellij session name 最长支持 36 个字符，这里生成稳定且受限长度的名字。
+-- tmux session 名保持短且稳定，避免 target 名称太长时选择器难读。
 local function get_session_name(term_name)
   local branch = trim_session_part(get_git_branch(), BRANCH_TOKEN_MAX_LEN)
   local term = trim_session_part(sanitize_session_part(term_name), TERM_TOKEN_MAX_LEN)
@@ -121,46 +77,14 @@ local function get_new_session_name(term_name)
   return string.format("%s_%s_%s_%s", project_token, branch, term, fingerprint)
 end
 
-local function build_zellij_cmd(session_name)
+local function build_tmux_cmd(session_name)
   return string.format(
-    "cd %s && %s attach -c %s",
+    "cd %s && %s new-session -A -s %s",
     vim.fn.shellescape(project_root),
-    zellij_cli(),
+    tmux_cli(),
     vim.fn.shellescape(session_name)
   )
 end
-
-local TIME_UNIT_SECONDS = {
-  s = 1,
-  sec = 1,
-  secs = 1,
-  second = 1,
-  seconds = 1,
-  m = 60,
-  min = 60,
-  mins = 60,
-  minute = 60,
-  minutes = 60,
-  h = 3600,
-  hr = 3600,
-  hrs = 3600,
-  hour = 3600,
-  hours = 3600,
-  d = 86400,
-  day = 86400,
-  days = 86400,
-  w = 604800,
-  week = 604800,
-  weeks = 604800,
-  mo = 2592000,
-  month = 2592000,
-  months = 2592000,
-  y = 31536000,
-  yr = 31536000,
-  yrs = 31536000,
-  year = 31536000,
-  years = 31536000,
-}
 
 -- 记录“上一次活跃的 term”，用于 toggle 关闭/再次打开时恢复
 local last_active = 1
@@ -173,7 +97,7 @@ for i = 1, 3 do
     return get_session_name(term_name)
   end
   local initial_prefix = get_initial_prefix()
-  local default_cmd = build_zellij_cmd(initial_prefix)
+  local default_cmd = build_tmux_cmd(initial_prefix)
 
   terms[i] = Terminal:new({
     id = i,
@@ -200,37 +124,10 @@ for i = 1, 3 do
     end,
     on_exit = function(term)
       -- 退出后重置为创建新会话的命令
-      term.cmd = build_zellij_cmd(get_session_name(get_term_key(term)))
+      term.cmd = build_tmux_cmd(get_session_name(get_term_key(term)))
       term.current_session = nil
     end,
   })
-end
-
-local function parse_zellij_created_seconds(meta)
-  if not meta then
-    return nil
-  end
-
-  local created = meta:match("^Created%s+(.+)%s+ago$")
-  if not created then
-    return nil
-  end
-
-  local total = 0
-  local matched = false
-  for value, unit in created:gmatch("(%d+)%s*([%a]+)") do
-    local multiplier = TIME_UNIT_SECONDS[unit:lower()]
-    if multiplier then
-      total = total + tonumber(value) * multiplier
-      matched = true
-    end
-  end
-
-  if matched then
-    return total
-  end
-
-  return nil
 end
 
 local function get_sessions(term_name)
@@ -240,7 +137,13 @@ local function get_sessions(term_name)
   local legacy_term_suffix = string.format("_%s", sanitized_term_name)
   local compact_project_prefix = string.format("%s_", project_token)
   local compact_term_suffix_pattern = string.format("_%s_[0-9a-f]+$", escape_lua_pattern(compact_term_name))
-  local lines = vim.fn.systemlist(string.format("%s list-sessions -n 2>/dev/null", zellij_cli()))
+  local lines = vim.fn.systemlist(
+    string.format(
+      "%s list-sessions -F %s 2>/dev/null",
+      tmux_cli(),
+      vim.fn.shellescape("#{session_name}\t#{session_created}\t#{session_windows} window(s)")
+    )
+  )
 
   if vim.v.shell_error ~= 0 then
     return {}
@@ -248,28 +151,27 @@ local function get_sessions(term_name)
 
   local sessions = {}
   for _, line in ipairs(lines) do
-    if line ~= "No active zellij sessions found." then
-      local name, meta = line:match("^(.-)%s+%[(.+)%]%s*$")
-      name = name or vim.trim(line)
-      if name ~= "" then
-        local is_legacy_project_session = starts_with(name, legacy_project_prefix)
-          and ends_with(name, legacy_term_suffix)
-        local is_compact_project_session = starts_with(name, compact_project_prefix)
-          and name:find(compact_term_suffix_pattern)
+    local name, created, windows = line:match("^([^\t]+)\t(%d+)\t(.+)$")
+    name = name or vim.trim(line)
+    if name ~= "" then
+      local is_legacy_project_session = starts_with(name, legacy_project_prefix)
+        and ends_with(name, legacy_term_suffix)
+      local is_compact_project_session = starts_with(name, compact_project_prefix)
+        and name:find(compact_term_suffix_pattern)
 
-        if is_legacy_project_session or is_compact_project_session then
-          table.insert(sessions, {
-            name = name,
-            meta = meta,
-            created_seconds = parse_zellij_created_seconds(meta),
-          })
-        end
+      if is_legacy_project_session or is_compact_project_session then
+        local created_at = tonumber(created)
+        table.insert(sessions, {
+          name = name,
+          meta = created_at and string.format("%s, %s", os.date("%Y-%m-%d %H:%M", created_at), windows) or nil,
+          created_at = created_at,
+        })
       end
     end
   end
 
   table.sort(sessions, function(a, b)
-    return (a.created_seconds or math.huge) < (b.created_seconds or math.huge)
+    return (a.created_at or 0) > (b.created_at or 0)
   end)
 
   return sessions
@@ -318,7 +220,7 @@ local function select_session_with_telescope(term)
       },
       sorting_strategy = "ascending",
     }, {
-      prompt_title = string.format("Select zellij session for [%s]", term_key),
+      prompt_title = string.format("Select tmux session for [%s]", term_key),
       finder = finders.new_table({
         results = options,
       }),
@@ -327,12 +229,12 @@ local function select_session_with_telescope(term)
         get_command = function(entry)
           local choice = entry[1]
           if choice == "New Session" then
-            return { "echo", "Create a new zellij session" }
+            return { "echo", "Create a new tmux session" }
           end
           local session_name = session_map[choice]
           local preview_cmd = string.format(
-            "output=$(%s -s %s action dump-screen --full 2>/dev/null); if [ -n \"$output\" ]; then printf '%%s\\n' \"$output\"; else echo 'No screen content available'; fi",
-            zellij_cli(),
+            "output=$(%s capture-pane -p -J -S -200 -t %s 2>/dev/null); if [ -n \"$output\" ]; then printf '%%s\\n' \"$output\"; else echo 'No screen content available'; fi",
+            tmux_cli(),
             vim.fn.shellescape(session_name)
           )
           return { "bash", "-lc", preview_cmd }
@@ -347,10 +249,10 @@ local function select_session_with_telescope(term)
           end
           local choice = selection[1]
           if choice ~= "New Session" then
-            term.cmd = build_zellij_cmd(session_map[choice])
+            term.cmd = build_tmux_cmd(session_map[choice])
             term.current_session = session_map[choice]
           else
-            term.cmd = build_zellij_cmd(get_new_session_name(term_key))
+            term.cmd = build_tmux_cmd(get_new_session_name(term_key))
             term.current_session = nil
           end
           open_or_focus(term)
@@ -364,7 +266,7 @@ local function select_session_with_telescope(term)
           local choice = selection[1]
           if choice ~= "New Session" then
             local session_name = session_map[choice]
-            vim.fn.system(string.format("%s kill-session %s", zellij_cli(), vim.fn.shellescape(session_name)))
+            vim.fn.system(string.format("%s kill-session -t %s", tmux_cli(), vim.fn.shellescape(session_name)))
             actions.close(prompt_bufnr)
             -- 重新打开选择器以刷新列表
             select_session_with_telescope(term)
