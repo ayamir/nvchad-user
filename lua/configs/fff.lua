@@ -68,15 +68,25 @@ local function describe_item(item)
   return #parts > 0 and table.concat(parts, ", ") or "no known fields"
 end
 
-local function patch_select_nil_path()
+local function patch_item_paths()
   local ok, picker_ui = pcall(require, "fff.picker_ui")
-  if not ok or picker_ui._ponytail_nil_path_guard then
+  if not ok or picker_ui._ponytail_item_path_guard then
     return
   end
 
   local original_select = picker_ui.select
-  if type(original_select) ~= "function" then
+  local original_update_preview = picker_ui.update_preview
+  if type(original_select) ~= "function" or type(original_update_preview) ~= "function" then
     return
+  end
+
+  local function resolve_current_item_path()
+    local items = picker_ui.state.filtered_items or {}
+    local item = items[picker_ui.state.cursor]
+    if item then
+      item.path = resolve_item_path(picker_ui, item)
+    end
+    return item
   end
 
   picker_ui.select = function(action)
@@ -84,11 +94,7 @@ local function patch_select_nil_path()
       return original_select(action)
     end
 
-    local items = picker_ui.state.filtered_items or {}
-    local item = items[picker_ui.state.cursor]
-    if item then
-      item.path = resolve_item_path(picker_ui, item)
-    end
+    local item = resolve_current_item_path()
 
     if item and item.path == nil then
       vim.notify("fff.nvim: current selection has no file path (" .. describe_item(item) .. ")", vim.log.levels.WARN)
@@ -97,12 +103,19 @@ local function patch_select_nil_path()
 
     return original_select(action)
   end
-  picker_ui._ponytail_nil_path_guard = true
+
+  picker_ui.update_preview = function()
+    if picker_ui.state and picker_ui.state.active then
+      resolve_current_item_path()
+    end
+    return original_update_preview()
+  end
+  picker_ui._ponytail_item_path_guard = true
 end
 
 function M.setup(opts)
   require("fff").setup(opts or {})
-  patch_select_nil_path()
+  patch_item_paths()
 end
 
 function M._selfcheck()
