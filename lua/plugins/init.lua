@@ -558,7 +558,7 @@ return {
     cmd = "Neogit",
     dependencies = { "nvim-lua/plenary.nvim", "sindrets/diffview.nvim" },
     opts = {
-      integrations = { diffview = true },
+      integrations = { diffview = true, telescope = false, snacks = true },
     },
   },
 
