@@ -554,6 +554,15 @@ return {
   },
 
   {
+    "NeogitOrg/neogit",
+    cmd = "Neogit",
+    dependencies = { "nvim-lua/plenary.nvim", "sindrets/diffview.nvim" },
+    opts = {
+      integrations = { diffview = true },
+    },
+  },
+
+  {
     "aaronhallaert/advanced-git-search.nvim",
     cmd = { "AdvancedGitSearch" },
     config = function()
