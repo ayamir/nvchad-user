@@ -9,20 +9,6 @@ return {
   },
 
   {
-    "nvim-telescope/telescope.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    opts = function()
-      return {
-        defaults = require("telescope.themes").get_ivy({
-          sorting_strategy = "ascending",
-        }),
-      }
-    end,
-    config = function(_, opts)
-      require("telescope").setup(opts)
-    end,
-  },
-  {
     "nvim-tree/nvim-tree.lua",
     cmd = {
       "NvimTreeToggle",
@@ -38,8 +24,7 @@ return {
           return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
         end
 
-        local preview_win
-        local preview_buf
+        local preview
         local preview_autocmd
         local preview_augroup = vim.api.nvim_create_augroup("NvimTreeFloatPreview", { clear = false })
 
@@ -49,16 +34,15 @@ return {
             preview_autocmd = nil
           end
 
-          if preview_win and vim.api.nvim_win_is_valid(preview_win) then
-            vim.api.nvim_win_close(preview_win, true)
+          if preview and preview:valid() then
+            preview:close()
           end
 
-          preview_win = nil
-          preview_buf = nil
+          preview = nil
         end
 
         local function update_preview()
-          if not preview_win or not vim.api.nvim_win_is_valid(preview_win) then
+          if not preview or not preview:valid() then
             close_preview()
             return
           end
@@ -68,63 +52,31 @@ return {
             return
           end
 
-          vim.api.nvim_win_set_config(preview_win, {
-            title = " " .. vim.fn.fnamemodify(node.absolute_path, ":~:.") .. " ",
-            title_pos = "center",
-          })
-
-          local previous_buf = preview_buf
-          preview_buf = vim.api.nvim_create_buf(false, true)
-          vim.api.nvim_win_set_buf(preview_win, preview_buf)
-          vim.bo[preview_buf].bufhidden = "wipe"
-          vim.bo[preview_buf].swapfile = false
-          vim.bo[preview_buf].modifiable = true
-          vim.api.nvim_buf_set_lines(preview_buf, 0, -1, false, { "Loading preview..." })
-
-          if previous_buf and vim.api.nvim_buf_is_valid(previous_buf) then
-            vim.api.nvim_buf_delete(previous_buf, { force = true })
-          end
-
-          require("telescope.config").values.buffer_previewer_maker(node.absolute_path, preview_buf, {
-            winid = preview_win,
-            preview = {
-              timeout = 250,
-              filesize_limit = 10,
-              highlight_limit = 1,
-            },
-            callback = function(buf)
-              if vim.api.nvim_buf_is_valid(buf) then
-                vim.bo[buf].modifiable = false
-                vim.bo[buf].readonly = true
-              end
-            end,
-          })
-          vim.api.nvim_win_set_cursor(preview_win, { 1, 0 })
+          preview.file = node.absolute_path
+          preview.opts.file = node.absolute_path
+          preview.buf = nil
+          preview:set_title(" " .. vim.fn.fnamemodify(node.absolute_path, ":~:.") .. " ")
+          preview:open_buf()
+          preview:set_buf(preview.buf)
+          vim.api.nvim_win_set_cursor(preview.win, { 1, 0 })
         end
 
         local function preview_float()
-          if preview_win and vim.api.nvim_win_is_valid(preview_win) then
+          if preview and preview:valid() then
             close_preview()
             return
           end
 
-          local width = math.floor(vim.o.columns * 0.72)
-          local height = math.floor(vim.o.lines * 0.72)
-          preview_win = vim.api.nvim_open_win(0, false, {
-            relative = "editor",
-            width = width,
-            height = height,
-            col = math.floor((vim.o.columns - width) / 2),
-            row = math.floor((vim.o.lines - height) / 2),
-            style = "minimal",
+          preview = Snacks.win({
+            width = 0.72,
+            height = 0.72,
             border = "rounded",
+            backdrop = false,
+            wo = {
+              wrap = true,
+              linebreak = true,
+            },
           })
-
-          vim.wo[preview_win].number = false
-          vim.wo[preview_win].relativenumber = false
-          vim.wo[preview_win].signcolumn = "no"
-          vim.wo[preview_win].wrap = true
-          vim.wo[preview_win].linebreak = true
 
           update_preview()
           preview_autocmd = vim.api.nvim_create_autocmd("CursorMoved", {

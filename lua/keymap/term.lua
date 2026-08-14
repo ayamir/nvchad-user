@@ -191,120 +191,94 @@ local function open_or_focus(term)
   term:toggle()
 end
 
-local function select_session_with_telescope(term)
+local function select_session_with_snacks(term)
   local term_key = get_term_key(term)
   local sessions = get_sessions(term_key)
-  local options = { "New Session" }
-  local session_map = {}
-  for _, s in ipairs(sessions) do
-    local label = s.meta and string.format("%s [%s]", s.name, s.meta) or s.name
-    table.insert(options, label)
-    session_map[label] = s.name
+  local items = {
+    {
+      text = "New Session",
+      preview = { text = "Create a new tmux session", ft = "text", loc = false },
+    },
+  }
+
+  for _, session in ipairs(sessions) do
+    local label = session.meta and string.format("%s [%s]", session.name, session.meta) or session.name
+    local output = vim.fn.system({ tmux_cli(), "capture-pane", "-p", "-J", "-S", "-200", "-t", session.name })
+    items[#items + 1] = {
+      text = label,
+      session_name = session.name,
+      preview = { text = output ~= "" and output or "No screen content available", ft = "text", loc = false },
+    }
   end
 
-  local pickers = require("telescope.pickers")
-  local finders = require("telescope.finders")
-  local conf = require("telescope.config").values
-  local actions = require("telescope.actions")
-  local action_state = require("telescope.actions.state")
-  local previewers = require("telescope.previewers")
-
-  pickers
-    .new({
-      layout_strategy = "vertical",
-      layout_config = {
-        width = 0.8,
-        height = 0.9,
-        preview_height = 0.8,
-        prompt_position = "top",
-      },
-      sorting_strategy = "ascending",
-    }, {
-      prompt_title = string.format("Select tmux session for [%s]", term_key),
-      finder = finders.new_table({
-        results = options,
-      }),
-      sorter = conf.generic_sorter({}),
-      previewer = previewers.new_termopen_previewer({
-        get_command = function(entry)
-          local choice = entry[1]
-          if choice == "New Session" then
-            return { "echo", "Create a new tmux session" }
-          end
-          local session_name = session_map[choice]
-          local preview_cmd = string.format(
-            "output=$(%s capture-pane -p -J -S -200 -t %s 2>/dev/null); if [ -n \"$output\" ]; then printf '%%s\\n' \"$output\"; else echo 'No screen content available'; fi",
-            tmux_cli(),
-            vim.fn.shellescape(session_name)
-          )
-          return { "bash", "-lc", preview_cmd }
-        end,
-      }),
-      attach_mappings = function(prompt_bufnr, map)
-        actions.select_default:replace(function()
-          actions.close(prompt_bufnr)
-          local selection = action_state.get_selected_entry()
-          if not selection then
-            return
-          end
-          local choice = selection[1]
-          if choice ~= "New Session" then
-            term.cmd = build_tmux_cmd(session_map[choice])
-            term.current_session = session_map[choice]
-          else
-            term.cmd = build_tmux_cmd(get_new_session_name(term_key))
-            term.current_session = nil
-          end
-          open_or_focus(term)
-        end)
-
-        map("i", "<C-d>", function()
-          local selection = action_state.get_selected_entry()
-          if not selection then
-            return
-          end
-          local choice = selection[1]
-          if choice ~= "New Session" then
-            local session_name = session_map[choice]
-            vim.fn.system(string.format("%s kill-session -t %s", tmux_cli(), vim.fn.shellescape(session_name)))
-            actions.close(prompt_bufnr)
-            -- 重新打开选择器以刷新列表
-            select_session_with_telescope(term)
-          else
-            vim.notify("Cannot delete 'New Session' option", vim.log.levels.WARN)
-          end
-        end)
-
-        -- 允许在选择器开启时通过 <A-j>/<A-k> 切换终端
-        map({ "i", "n" }, "<A-j>", function()
-          actions.close(prompt_bufnr)
-          vim.schedule(function()
-            M.move_term(1)
-          end)
-        end)
-        map({ "i", "n" }, "<A-k>", function()
-          actions.close(prompt_bufnr)
-          vim.schedule(function()
-            M.move_term(-1)
-          end)
-        end)
-
-        -- 允许在选择器开启时通过 <A-d> 直接关闭界面（取消操作）
-        map({ "i", "n" }, "<A-d>", function()
-          actions.close(prompt_bufnr)
-        end)
-
-        return true
+  Snacks.picker.pick({
+    source = "tmux_sessions",
+    title = string.format("Select tmux session for [%s]", term_key),
+    finder = function()
+      return items
+    end,
+    format = "text",
+    layout = { preset = "vertical" },
+    actions = {
+      confirm = function(picker, item)
+        picker:close()
+        if item.session_name then
+          term.cmd = build_tmux_cmd(item.session_name)
+          term.current_session = item.session_name
+        else
+          term.cmd = build_tmux_cmd(get_new_session_name(term_key))
+          term.current_session = nil
+        end
+        open_or_focus(term)
       end,
-    })
-    :find()
+      delete_session = function(picker, item)
+        if not item or not item.session_name then
+          vim.notify("Cannot delete 'New Session' option", vim.log.levels.WARN)
+          return
+        end
+        vim.fn.system({ tmux_cli(), "kill-session", "-t", item.session_name })
+        picker:close()
+        select_session_with_snacks(term)
+      end,
+      next_term = function(picker)
+        picker:close()
+        vim.schedule(function()
+          M.move_term(1)
+        end)
+      end,
+      prev_term = function(picker)
+        picker:close()
+        vim.schedule(function()
+          M.move_term(-1)
+        end)
+      end,
+    },
+    win = {
+      input = {
+        keys = {
+          ["<C-d>"] = { "delete_session", mode = { "n", "i" } },
+          ["<A-j>"] = { "next_term", mode = { "n", "i" } },
+          ["<A-k>"] = { "prev_term", mode = { "n", "i" } },
+          ["<A-d>"] = { "close", mode = { "n", "i" } },
+        },
+      },
+      list = {
+        keys = {
+          ["<C-d>"] = "delete_session",
+          ["<A-j>"] = "next_term",
+          ["<A-k>"] = "prev_term",
+          ["<A-d>"] = "close",
+        },
+      },
+    },
+  })
 end
 
 M.activate_term = function(term)
   last_active = term.id
   if not term.job_id then
-    -- 总是弹出 telescope 选择会话（包括新建）
-    select_session_with_telescope(term)
+    -- 总是弹出 Snacks 选择会话（包括新建）
+    select_session_with_snacks(term)
     return
   end
   open_or_focus(term)

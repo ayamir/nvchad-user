@@ -41,7 +41,6 @@ return function()
       "snacks_picker_preview",
       "Outline",
       "qf",
-      "TelescopePrompt",
       "toggleterm",
       "undotree",
       "vimwiki",
