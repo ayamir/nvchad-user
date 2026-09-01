@@ -88,12 +88,20 @@ local function enable_mason_installed_servers()
     return
   end
 
-  -- 仅用于“根据已安装的 Mason server 自动启用 LSP”，不强制安装。
-  -- 这里的 setup 主要用来确保 mason-lspconfig 的 server 映射已加载。
-  mlsp.setup({})
+  local function is_mason_lsp_server_eligible(name)
+    -- rust-analyzer 交给 rustaceanvim；ruff/ruff_lsp 只当 formatter 用，不作为 LSP（否则会扫描 workspace 报错）
+    local excluded = { rust_analyzer = true, ruff = true, ruff_lsp = true }
+    return not excluded[name]
+  end
 
-  -- 避免和 rustaceanvim 重复启动 rust-analyzer
-  local excluded = { rust_analyzer = true }
+  -- 仅用于“根据已安装的 Mason server 自动启用 LSP”，不强制安装。
+  -- setup 里显式排除 ruff，避免 its automatic_enable 把 ruff 当 LSP 拉起。
+  mlsp.setup({
+    automatic_enable = {
+      -- exclude 表外的服务器才会被 automatic_enable 启用
+      exclude = { "rust_analyzer", "ruff", "ruff_lsp" },
+    },
+  })
 
   local installed = mlsp.get_installed_servers()
   if type(installed) ~= "table" or vim.tbl_isempty(installed) then
@@ -102,7 +110,7 @@ local function enable_mason_installed_servers()
 
   local to_enable = {}
   for _, name in ipairs(installed) do
-    if not excluded[name] then
+    if is_mason_lsp_server_eligible(name) then
       table.insert(to_enable, name)
     end
   end
@@ -206,17 +214,47 @@ vim.lsp.config("jsonls", {
   },
 })
 
+-- Python 项目判定用到的 marker：缺失时按“单文件”处理（root 取文件所在目录）
+local python_markers = {
+  "pyproject.toml",
+  "setup.py",
+  "setup.cfg",
+  "requirements.txt",
+  "Pipfile",
+  "tox.ini",
+}
+
+local python_project_root = function(bufnr)
+  local dir = vim.fs.root(bufnr, python_markers)
+  if dir then
+    return dir
+  end
+  -- 无项目 marker：退回单文件模式，root 取文件所在目录，绝不冒泡到 $HOME
+  return vim.fs.dirname(vim.api.nvim_buf_get_name(bufnr))
+end
+
+-- Python 语言服务器：zuban（字节内部 Rust 类型检查 + LSP）
+-- 安装：MasonInstall zuban --confirm；命令为 `zuban server`
 vim.lsp.config("zuban", {
   cmd = { "zuban", "server" },
   filetypes = { "python" },
-  root_markers = {
-    "pyproject.toml",
-    "setup.py",
-    "setup.cfg",
-    "requirements.txt",
-    "Pipfile",
-    ".git",
-  },
+  root_markers = python_markers,
+  -- 有项目 marker 用项目根，否则单文件模式取文件所在目录，避免冒泡到 $HOME
+  root_dir = python_project_root,
+})
+
+-- 显式 FileType autocmd 启动（双保险）：确保 zuban 一定在 python 文件拉起。
+-- （若 zuban 也已通过 enable_mason_installed_servers 自动启用，vim.lsp.start 会复用
+-- 已有 client，不会重复启动。）
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "python",
+  callback = function(args)
+    local cfg = vim.lsp.config["zuban"]
+    if cfg then
+      vim.lsp.start(cfg, { bufnr = args.buf })
+    end
+  end,
+  group = vim.api.nvim_create_augroup("PythonLspStart", { clear = true }),
 })
 
 vim.lsp.config("nixd", {

@@ -56,6 +56,11 @@ return function()
 
     local debugging = false
 
+    -- 显式关闭 DapUI（与 <leader>du 等价，但提供命令入口）
+    vim.api.nvim_create_user_command("DapUIClose", function()
+      dapui.close()
+    end, { desc = "Close DapUI panels" })
+
     dap.listeners.after.event_initialized["dapui_config"] = function()
       debugging = true
       dapui.open({ reset = true })
