@@ -686,8 +686,10 @@ return {
     opts = {
       mode = "dynamic",
       scope = "buffer",
-      source = "lsp_else_word",
-      direction = "both",
+      sources = { "lsp_else_word" },
+      flow_settings = {
+        direction = "both",
+      },
     },
   },
 }
